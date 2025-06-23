@@ -54,11 +54,9 @@ void add_client(connection_manager *manager, int client_fd) {
         return;
     }
 
-    // Add to clients array
     manager->clients[manager->client_count].fd = client_fd;
     manager->clients[manager->client_count].buffer_len = 0;
 
-    // Add to poll array
     manager->poll_fds[manager->poll_count].fd = client_fd;
     manager->poll_fds[manager->poll_count].events = POLLIN;
     manager->poll_fds[manager->poll_count].revents = 0;
@@ -71,15 +69,12 @@ void add_client(connection_manager *manager, int client_fd) {
 void remove_client(connection_manager *manager, int index) {
     if (index < 0 || index >= manager->client_count) return;
 
-    // Close the client socket
     close(manager->clients[index].fd);
 
-    // Remove from poll array
     for (int i = index; i < manager->poll_count - 1; i++) {
         manager->poll_fds[i] = manager->poll_fds[i + 1];
     }
 
-    // Remove from clients array
     for (int i = index; i < manager->client_count - 1; i++) {
         manager->clients[i] = manager->clients[i + 1];
     }
@@ -103,14 +98,12 @@ void handle_client_data(connection_manager *manager, int index) {
 
     client->buffer_len += bytes_read;
     
-    // Echo back the received data
     if (send(client->fd, client->buffer, client->buffer_len, 0) == -1) {
         perror("Send failed");
         remove_client(manager, index);
         return;
     }
 
-    // Clear the buffer after sending
     client->buffer_len = 0;
 }
 
@@ -125,7 +118,6 @@ void run_server(tcp_server *server) {
     connection_manager manager;
     init_connection_manager(&manager);
 
-    // Add server socket to poll array
     manager.poll_fds[0].fd = server->socket_fd;
     manager.poll_fds[0].events = POLLIN;
     manager.poll_count = 1;
@@ -139,12 +131,10 @@ void run_server(tcp_server *server) {
             break;
         }
 
-        // Check server socket for new connections
         if (manager.poll_fds[0].revents & POLLIN) {
             handle_new_connection(&manager, server->socket_fd);
         }
 
-        // Check client sockets for data
         for (int i = 1; i < manager.poll_count; i++) {
             if (manager.poll_fds[i].revents & POLLIN) {
                 handle_client_data(&manager, i - 1);
@@ -152,7 +142,6 @@ void run_server(tcp_server *server) {
         }
     }
 
-    // Cleanup
     for (int i = 0; i < manager.client_count; i++) {
         close(manager.clients[i].fd);
     }
