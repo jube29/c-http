@@ -1,31 +1,6 @@
 #include "http.h"
-#include <string.h>
 
-parse_result_e parse_http_request(const char *line, http_request *request) {
-  char method_str[32], path_str[256], protocol_str[16];
-  
-  parse_result_e result = split_http_request(line, method_str, path_str, protocol_str);
-  if (result != PARSE_OK) {
-    return result;
-  }
-  
-  result = parse_http_method(method_str, &request->method);
-  if (result != PARSE_OK) {
-    return result;
-  }
-  
-  result = parse_http_path(path_str, request->path);
-  if (result != PARSE_OK) {
-    return result;
-  }
-  
-  result = parse_http_protocol(protocol_str, request->protocol);
-  if (result != PARSE_OK) {
-    return result;
-  }
-  
-  return PARSE_OK;
-}
+#include <string.h>
 
 parse_result_e split_http_request_line(const char *line, char *method, char *path, char *protocol) {
   const char *method_end = strchr(line, ' ');
@@ -96,5 +71,31 @@ parse_result_e parse_http_protocol(const char *protocol, char *result) {
     return PARSE_INVALID_PROTOCOL;
   }
   strcpy(result, protocol);
+  return PARSE_OK;
+}
+
+parse_result_e parse_http_request(const char *line, http_request *request) {
+  char method_str[32], path_str[256], protocol_str[16];
+  
+  parse_result_e result = split_http_request_line(line, method_str, path_str, protocol_str);
+  if (result != PARSE_OK) {
+    return result;
+  }
+  
+  result = parse_http_method(method_str, &request->method);
+  if (result != PARSE_OK) {
+    return result;
+  }
+  
+  result = parse_http_path(path_str, request->path);
+  if (result != PARSE_OK) {
+    return result;
+  }
+  
+  result = parse_http_protocol(protocol_str, request->protocol);
+  if (result != PARSE_OK) {
+    return result;
+  }
+  
   return PARSE_OK;
 }

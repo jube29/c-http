@@ -1,6 +1,9 @@
 #include "main.h"
 #include "tcp.h"
 
+#include <stdlib.h>
+#include <stdio.h>
+
 int main() {
     tcp_server server = {0};
     server_status_e status = bind_tcp_port(&server);

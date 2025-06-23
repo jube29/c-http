@@ -25,22 +25,10 @@ typedef struct {
   char protocol[16];
 } http_request;
 
-parse_result_e parse_http_request(const char *line, http_request *request);
 parse_result_e split_http_request_line(const char *line, char *method, char *path, char *protocol);
 parse_result_e parse_http_method(const char *method, http_method_e *result);
 parse_result_e parse_http_path(const char *path, char *result);
 parse_result_e parse_http_protocol(const char *protocol, char *result);
-
-// METHOD PATH PROTOCOL
-
-/*
- an entry point
-- a splitter (split the line in 3 parts method, path, protocol
-- 3 parsers for each of the 3 parts : 
-  - method to enum, 
-  - path : No spaces in path / Starts with '/' / Basic length check 
-  - and then valid protocol checker : valid form
-- if one of those fails the entry point will return a error code or not otherwise
-*/
+parse_result_e parse_http_request(const char *line, http_request *request);
 
 #endif // HTTP_H
