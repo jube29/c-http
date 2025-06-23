@@ -33,7 +33,7 @@ typedef struct {
     int poll_count;
 } connection_manager;
 
-server_status_e bind_tcp_port(tcp_server *server, int port);
+server_status_e bind_tcp_port(tcp_server *server);
 int accept_client(int server_fd);
 void init_connection_manager(connection_manager *manager);
 void add_client(connection_manager *manager, int client_fd);

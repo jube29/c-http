@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-server_status_e bind_tcp_port(tcp_server *server, int port) {
+server_status_e bind_tcp_port(tcp_server *server) {
     memset(server, 0, sizeof(*server));
     server->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server->socket_fd == -1) {
@@ -17,7 +17,7 @@ server_status_e bind_tcp_port(tcp_server *server, int port) {
     }
     server->address.sin_family = AF_INET;
     server->address.sin_addr.s_addr = inet_addr("127.0.0.1");
-    server->address.sin_port = htons(port);
+    server->address.sin_port = htons(8080);
     if (bind(server->socket_fd, (struct sockaddr *)&server->address, sizeof(server->address)) < 0) {
         perror("Bind failed");
         close(server->socket_fd);
