@@ -17,7 +17,7 @@ parse_result_e split_http_request_line(const char *line, char *method, char *pat
   size_t path_len = path_end - (method_end + 1);
   size_t protocol_len = strlen(path_end + 1);
 
-  if (method_len > 32 || path_len > 256 || protocol_len > 16) {
+  if (method_len > 8 || path_len > 256 || protocol_len > 16) {
     return PARSE_MALFORMED_LINE;
   }
   
@@ -30,27 +30,11 @@ parse_result_e split_http_request_line(const char *line, char *method, char *pat
   return PARSE_OK;
 }
 
-parse_result_e parse_http_method(const char *method, http_method_e *result) {
+parse_result_e parse_http_method(const char *method, char *result) {
   if(strcmp(method, "GET") == 0) {
-    *result = HTTP_GET;
-    return PARSE_OK;
-  } else if(strcmp(method, "POST") == 0) {
-    *result = HTTP_POST;
-    return PARSE_OK;
-  } else if(strcmp(method, "PUT") == 0) {
-    *result = HTTP_PUT;
-    return PARSE_OK;
-  } else if(strcmp(method, "DELETE") == 0) {
-    *result = HTTP_DELETE;
-    return PARSE_OK;
-  } else if(strcmp(method, "HEAD") == 0) {
-    *result = HTTP_HEAD;
-    return PARSE_OK;
-  } else if(strcmp(method, "OPTIONS") == 0) {
-    *result = HTTP_OPTIONS;
+    strcpy(result, "GET");
     return PARSE_OK;
   } else {
-    *result = HTTP_UNKNOWN;
     return PARSE_INVALID_METHOD;
   }
 }
@@ -82,7 +66,7 @@ parse_result_e parse_http_request(const char *line, http_request *request) {
     return result;
   }
   
-  result = parse_http_method(method_str, &request->method);
+  result = parse_http_method(method_str, request->method);
   if (result != PARSE_OK) {
     return result;
   }
