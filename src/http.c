@@ -52,10 +52,17 @@ parse_result_e parse_http_path(const char *path, char *result) {
 }
 
 parse_result_e parse_http_protocol(const char *protocol, char *result) {
-  if(strcmp(protocol, "HTTP/1.1") != 0) {
+  char protocol_clean[16];
+  strcpy(protocol_clean, protocol);
+  char *cr = strchr(protocol_clean, '\r');
+  if (cr) *cr = '\0';
+  char *lf = strchr(protocol_clean, '\n');
+  if (lf) *lf = '\0';
+
+  if(strcmp(protocol_clean, "HTTP/1.1") != 0) {
     return PARSE_INVALID_PROTOCOL;
   }
-  strcpy(result, protocol);
+  strcpy(result, protocol_clean);
   return PARSE_OK;
 }
 
