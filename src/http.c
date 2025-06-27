@@ -1,5 +1,6 @@
 #include "http.h"
 
+#include <stdio.h>
 #include <string.h>
 
 parse_result_e split_http_request_line(const char *line, char *method, char *path, char *protocol) {
@@ -59,7 +60,7 @@ parse_result_e parse_http_protocol(const char *protocol, char *result) {
 }
 
 parse_result_e parse_http_request(const char *line, http_request *request) {
-  char method_str[32], path_str[256], protocol_str[16];
+  char method_str[8], path_str[256], protocol_str[16];
   
   parse_result_e result = split_http_request_line(line, method_str, path_str, protocol_str);
   if (result != PARSE_OK) {
@@ -83,3 +84,4 @@ parse_result_e parse_http_request(const char *line, http_request *request) {
   
   return PARSE_OK;
 }
+
