@@ -1,5 +1,7 @@
 #include "tcp.h"
 #include "main.h"
+#include "http.h"
+#include "debug.h"
 
 #include <arpa/inet.h>
 #include <string.h>
@@ -27,7 +29,7 @@ server_status_e bind_tcp_port(tcp_server *server) {
         close(server->socket_fd);
         return SERVER_LISTEN_ERROR;
     }
-    printf("Server bound and listening on localhost\n");
+    debug_log("Server bound and listening on localhost\n");
     return SERVER_OK;
 }
 
@@ -49,7 +51,7 @@ void init_connection_manager(connection_manager *manager) {
 
 void add_client(connection_manager *manager, int client_fd) {
     if (manager->client_count >= MAX_CLIENTS) {
-        printf("Maximum number of clients reached\n");
+        fprintf(stderr, "Maximum number of clients reached\n");
         close(client_fd);
         return;
     }
@@ -63,7 +65,7 @@ void add_client(connection_manager *manager, int client_fd) {
 
     manager->client_count++;
     manager->poll_count++;
-    printf("New client connected. Total clients: %d\n", manager->client_count);
+    debug_log("New client connected. Total clients: %d\n", manager->client_count);
 }
 
 void remove_client(connection_manager *manager, int index) {
@@ -81,7 +83,7 @@ void remove_client(connection_manager *manager, int index) {
 
     manager->client_count--;
     manager->poll_count--;
-    printf("Client disconnected. Total clients: %d\n", manager->client_count);
+    debug_log("Client disconnected. Total clients: %d\n", manager->client_count);
 }
 
 void handle_client_data(connection_manager *manager, int index) {
@@ -97,6 +99,16 @@ void handle_client_data(connection_manager *manager, int index) {
     }
 
     client->buffer_len += bytes_read;
+
+    http_request request = {0};
+    parse_result_e result = parse_http_request(client->buffer, &request);
+    if (result != PARSE_OK) {
+        fprintf(stderr, "Request parsing failed: %d\n", result);
+        remove_client(manager, index);
+        return;
+    }
+
+    debug_log("New request: %s %s %s\n", request.method, request.path, request.protocol);
     
     if (send(client->fd, client->buffer, client->buffer_len, 0) == -1) {
         perror("Send failed");
@@ -122,7 +134,7 @@ void run_server(tcp_server *server) {
     manager.poll_fds[0].events = POLLIN;
     manager.poll_count = 1;
 
-    printf("Server running and waiting for connections...\n");
+    debug_log("Server running and waiting for connections...\n");
 
     while (1) {
         int poll_result = poll(manager.poll_fds, manager.poll_count, -1);
