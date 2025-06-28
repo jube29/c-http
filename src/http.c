@@ -3,34 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-parse_result_e split_http_request_line(const char *line, char *method, char *path, char *protocol) {
-  const char *method_end = strchr(line, ' ');
-  if (!method_end) {
-    return PARSE_MALFORMED_LINE;
-  }
-  
-  const char *path_end = strchr(method_end + 1, ' ');
-  if (!path_end) {
-    return PARSE_MALFORMED_LINE;
-  }
-  
-  size_t method_len = method_end - line;
-  size_t path_len = path_end - (method_end + 1);
-  size_t protocol_len = strlen(path_end + 1);
-
-  if (method_len > 8 || path_len > 256 || protocol_len > 16) {
-    return PARSE_MALFORMED_LINE;
-  }
-  
-  strncpy(method, line, method_len);
-  method[method_len] = '\0';
-  strncpy(path, method_end + 1, path_len);
-  path[path_len] = '\0';
-  strcpy(protocol, path_end + 1);
-  
-  return PARSE_OK;
-}
-
 parse_result_e parse_http_method(const char *method, char *result) {
   if(strcmp(method, "GET") == 0) {
     strcpy(result, "GET");
@@ -69,26 +41,21 @@ parse_result_e parse_http_protocol(const char *protocol, char *result) {
 parse_result_e parse_http_request(const char *line, http_request *request) {
   char method_str[8], path_str[256], protocol_str[16];
   
-  parse_result_e result = split_http_request_line(line, method_str, path_str, protocol_str);
-  if (result != PARSE_OK) {
-    return result;
+  if (sscanf(line, "%7s %255s %15s", method_str, path_str, protocol_str) != 3) {
+    return PARSE_MALFORMED_LINE;
+  }
+
+  if (parse_http_method(method_str, request->method) != PARSE_OK) {
+    return PARSE_INVALID_METHOD;
   }
   
-  result = parse_http_method(method_str, request->method);
-  if (result != PARSE_OK) {
-    return result;
+  if (parse_http_path(path_str, request->path) != PARSE_OK) {
+    return PARSE_INVALID_PATH;
   }
   
-  result = parse_http_path(path_str, request->path);
-  if (result != PARSE_OK) {
-    return result;
-  }
-  
-  result = parse_http_protocol(protocol_str, request->protocol);
-  if (result != PARSE_OK) {
-    return result;
+  if (parse_http_protocol(protocol_str, request->protocol) != PARSE_OK) {
+    return PARSE_INVALID_PROTOCOL;
   }
   
   return PARSE_OK;
 }
-
