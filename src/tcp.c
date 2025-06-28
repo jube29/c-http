@@ -71,6 +71,9 @@ void add_client(connection_manager *manager, int client_fd) {
 void remove_client(connection_manager *manager, int index) {
     if (index < 0 || index >= manager->client_count) return;
 
+    memset(manager->clients[index].buffer, 0, BUFFER_SIZE);
+    manager->clients[index].buffer_len = 0;
+
     close(manager->clients[index].fd);
 
     for (int i = index; i < manager->poll_count - 1; i++) {
@@ -116,7 +119,7 @@ void handle_client_data(connection_manager *manager, int index) {
         return;
     }
 
-    client->buffer_len = 0;
+    remove_client(manager, index);
 }
 
 void handle_new_connection(connection_manager *manager, int server_fd) {
