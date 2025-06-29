@@ -104,7 +104,7 @@ void handle_client_data(connection_manager *manager, int index) {
     client->buffer_len += bytes_read;
 
     http_request request = {0};
-    parse_result_e result = parse_http_request(client->buffer, &request);
+    parse_result_e result = parse_http_request_line(client->buffer, &request);
     if (result != PARSE_OK) {
         fprintf(stderr, "Request parsing failed: %d\n", result);
         remove_client(manager, index);

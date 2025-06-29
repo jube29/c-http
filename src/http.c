@@ -38,7 +38,7 @@ parse_result_e parse_http_protocol(const char *protocol, char *result) {
   return PARSE_OK;
 }
 
-parse_result_e parse_http_request(const char *line, http_request *request) {
+parse_result_e parse_http_request_line(const char *line, http_request *request) {
   char method_str[8], path_str[256], protocol_str[16];
   
   if (sscanf(line, "%7s %255s %15s", method_str, path_str, protocol_str) != 3) {
