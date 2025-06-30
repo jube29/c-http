@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <sys/socket.h>
 
 server_status_e bind_tcp_port(tcp_server *server) {
     memset(server, 0, sizeof(*server));
@@ -16,6 +17,14 @@ server_status_e bind_tcp_port(tcp_server *server) {
         perror("Socket creation failed");
         return SERVER_SOCKET_ERROR;
     }
+
+    int opt = 1;
+    if (setsockopt(server->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        perror("setsockopt(SO_REUSEADDR) failed");
+        close(server->socket_fd);
+        return SERVER_SOCKET_ERROR;
+    }
+
     server->address.sin_family = AF_INET;
     server->address.sin_addr.s_addr = inet_addr("127.0.0.1");
     server->address.sin_port = htons(8080);
