@@ -13,11 +13,11 @@ typedef struct {
   char method[8];
   char path[2048];
   char protocol[16];
-} http_request;
+} http_request_t;
 
 parse_result_e parse_http_method(const char *method, char *result);
 parse_result_e parse_http_path(const char *path, char *result);
 parse_result_e parse_http_protocol(const char *protocol, char *result);
-parse_result_e parse_http_request_line(const char *line, http_request *request);
+parse_result_e parse_http_request_line(const char *line, http_request_t *request);
 
 #endif // HTTP_H
