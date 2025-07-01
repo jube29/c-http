@@ -113,7 +113,7 @@ void handle_client_data(connection_manager *manager, int index) {
     client->buffer_len += bytes_read;
 
     http_request_t request = {0};
-    parse_result_e result = parse_http_request_line(client->buffer, &request);
+    parse_result_e result = parse_http_request(client->buffer, &request);
     if (result != PARSE_OK) {
         fprintf(stderr, "Request parsing failed: %d\n", result);
         remove_client(manager, index);
@@ -159,7 +159,7 @@ void run_server(tcp_server *server) {
             handle_new_connection(&manager, server->socket_fd);
         }
 
-        for (int i = 1; i < manager.poll_count; i++) {
+        for (int i = manager.poll_count - 1; i >= 1; i--) {
             if (manager.poll_fds[i].revents & POLLIN) {
                 handle_client_data(&manager, i - 1);
             }

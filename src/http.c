@@ -59,3 +59,26 @@ parse_result_e parse_http_request_line(const char *line, http_request_t *request
   
   return PARSE_OK;
 }
+
+parse_result_e parse_http_request(const char *data, http_request_t *request) {
+  const char *line_end = strstr(data, "\r\n");
+  if (line_end == NULL) {
+    return PARSE_MALFORMED_LINE;
+  }
+  
+  char request_line[512];
+  size_t line_len = line_end - data;
+  if (line_len >= sizeof(request_line) - 1) {
+    return PARSE_MALFORMED_LINE;
+  }
+  
+  strncpy(request_line, data, line_len);
+  request_line[line_len] = '\0';
+  
+  parse_result_e result = parse_http_request_line(request_line, request);
+  if (result != PARSE_OK) {
+    return result;
+  }
+  
+  return PARSE_OK;
+}
