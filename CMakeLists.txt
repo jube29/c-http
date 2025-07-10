@@ -5,7 +5,7 @@ add_executable(chttp
     src/tcp.c
     src/http.c
 )
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 target_include_directories(chttp PRIVATE include)
 target_link_libraries(chttp PRIVATE -lpthread)
 
