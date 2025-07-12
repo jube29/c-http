@@ -1,5 +1,9 @@
-# Build directories
+# Build
 build/
+compile_commands.json
 
 # IDE
 .vscode/
+
+# LSP
+.cache/
