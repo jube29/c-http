@@ -12,7 +12,7 @@ parse_result_e parse_http_method(const char *method) {
 }
 
 parse_result_e parse_http_path(const char *path) {
-  if (strlen(path) == 0 || path[0] != '/' || strlen(path) > 256) {
+  if (strlen(path) == 0 || path[0] != '/' || strlen(path) > HTTP_PATH_LEN) {
     return PARSE_INVALID_PATH;
   }
   if (strchr(path, ' ') != NULL) {
@@ -22,7 +22,7 @@ parse_result_e parse_http_path(const char *path) {
 }
 
 parse_result_e parse_http_protocol(const char *protocol) {
-  char protocol_clean[16];
+  char protocol_clean[HTTP_PROTOCOL_LEN];
   strcpy(protocol_clean, protocol);
 
   if(strcmp(protocol_clean, "HTTP/1.1") != 0) {
@@ -32,7 +32,7 @@ parse_result_e parse_http_protocol(const char *protocol) {
 }
 
 parse_result_e parse_http_request_line(const char *line, http_request_t *request) {
-  char method_str[8], path_str[256], protocol_str[16];
+  char method_str[HTTP_METHOD_LEN], path_str[HTTP_PATH_LEN], protocol_str[HTTP_PROTOCOL_LEN];
   
   if (sscanf(line, "%7s %255s %15s", method_str, path_str, protocol_str) != 3) {
     return PARSE_MALFORMED_LINE;
@@ -62,7 +62,7 @@ parse_result_e parse_http_request(const char *data, http_request_t *request) {
     return PARSE_MALFORMED_LINE;
   }
   
-  char request_line[512];
+  char request_line[HTTP_REQUEST_LINE_LEN];
   size_t line_len = line_end - data;
   if (line_len >= sizeof(request_line) - 1) {
     return PARSE_MALFORMED_LINE;

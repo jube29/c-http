@@ -1,6 +1,11 @@
 #ifndef HTTP_H
 #define HTTP_H
 
+#define HTTP_REQUEST_LINE_LEN 4096
+#define HTTP_METHOD_LEN 8
+#define HTTP_PATH_LEN 2048
+#define HTTP_PROTOCOL_LEN 16
+
 typedef enum {
     PARSE_OK,
     PARSE_INVALID_METHOD,
@@ -10,9 +15,9 @@ typedef enum {
 } parse_result_e;
 
 typedef struct {
-  char method[8];
-  char path[2048];
-  char protocol[16];
+  char method[HTTP_METHOD_LEN];
+  char path[HTTP_PATH_LEN];
+  char protocol[HTTP_PROTOCOL_LEN];
 } http_request_t;
 
 parse_result_e parse_http_method(const char *method);
