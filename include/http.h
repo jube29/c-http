@@ -15,9 +15,9 @@ typedef struct {
   char protocol[16];
 } http_request_t;
 
-parse_result_e parse_http_method(const char *method, char *result);
-parse_result_e parse_http_path(const char *path, char *result);
-parse_result_e parse_http_protocol(const char *protocol, char *result);
+parse_result_e parse_http_method(const char *method);
+parse_result_e parse_http_path(const char *path);
+parse_result_e parse_http_protocol(const char *protocol);
 parse_result_e parse_http_request_line(const char *line, http_request_t *request);
 parse_result_e parse_http_request(const char *data, http_request_t *request);
 

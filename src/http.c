@@ -3,38 +3,31 @@
 #include <stdio.h>
 #include <string.h>
 
-parse_result_e parse_http_method(const char *method, char *result) {
+parse_result_e parse_http_method(const char *method) {
   if(strcmp(method, "GET") == 0) {
-    strcpy(result, "GET");
     return PARSE_OK;
   } else {
     return PARSE_INVALID_METHOD;
   }
 }
 
-parse_result_e parse_http_path(const char *path, char *result) {
+parse_result_e parse_http_path(const char *path) {
   if (strlen(path) == 0 || path[0] != '/' || strlen(path) > 256) {
     return PARSE_INVALID_PATH;
   }
   if (strchr(path, ' ') != NULL) {
     return PARSE_INVALID_PATH;
   }
-  strcpy(result, path);
   return PARSE_OK;
 }
 
-parse_result_e parse_http_protocol(const char *protocol, char *result) {
+parse_result_e parse_http_protocol(const char *protocol) {
   char protocol_clean[16];
   strcpy(protocol_clean, protocol);
-  char *cr = strchr(protocol_clean, '\r');
-  if (cr) *cr = '\0';
-  char *lf = strchr(protocol_clean, '\n');
-  if (lf) *lf = '\0';
 
   if(strcmp(protocol_clean, "HTTP/1.1") != 0) {
     return PARSE_INVALID_PROTOCOL;
   }
-  strcpy(result, protocol_clean);
   return PARSE_OK;
 }
 
@@ -45,17 +38,20 @@ parse_result_e parse_http_request_line(const char *line, http_request_t *request
     return PARSE_MALFORMED_LINE;
   }
 
-  if (parse_http_method(method_str, request->method) != PARSE_OK) {
+  if (parse_http_method(method_str) != PARSE_OK) {
     return PARSE_INVALID_METHOD;
   }
+  strcpy(request->method, method_str);
   
-  if (parse_http_path(path_str, request->path) != PARSE_OK) {
+  if (parse_http_path(path_str) != PARSE_OK) {
     return PARSE_INVALID_PATH;
   }
+  strcpy(request->method, path_str);
   
-  if (parse_http_protocol(protocol_str, request->protocol) != PARSE_OK) {
+  if (parse_http_protocol(protocol_str) != PARSE_OK) {
     return PARSE_INVALID_PROTOCOL;
   }
+  strcpy(request->method, protocol_str);
   
   return PARSE_OK;
 }
