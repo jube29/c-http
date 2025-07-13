@@ -22,10 +22,7 @@ parse_result_e parse_http_path(const char *path) {
 }
 
 parse_result_e parse_http_protocol(const char *protocol) {
-  char protocol_clean[HTTP_PROTOCOL_LEN];
-  strcpy(protocol_clean, protocol);
-
-  if(strcmp(protocol_clean, "HTTP/1.1") != 0) {
+  if(strcmp(protocol, "HTTP/1.1") != 0) {
     return PARSE_INVALID_PROTOCOL;
   }
   return PARSE_OK;
@@ -38,20 +35,23 @@ parse_result_e parse_http_request_line(const char *line, http_request_t *request
     return PARSE_MALFORMED_LINE;
   }
 
-  if (parse_http_method(method_str) != PARSE_OK) {
-    return PARSE_INVALID_METHOD;
+  parse_result_e method_parse_result = parse_http_method(method_str);
+  if (method_parse_result != PARSE_OK) {
+    return method_parse_result;
   }
   strcpy(request->method, method_str);
-  
-  if (parse_http_path(path_str) != PARSE_OK) {
-    return PARSE_INVALID_PATH;
+
+  parse_result_e path_parse_result = parse_http_path(path_str);
+  if (path_parse_result  != PARSE_OK) {
+    return path_parse_result;
   }
-  strcpy(request->method, path_str);
+  strcpy(request->path, path_str);
   
-  if (parse_http_protocol(protocol_str) != PARSE_OK) {
-    return PARSE_INVALID_PROTOCOL;
+  parse_result_e protocol_parse_result = parse_http_protocol(protocol_str);
+  if (protocol_parse_result != PARSE_OK) {
+    return protocol_parse_result;
   }
-  strcpy(request->method, protocol_str);
+  strcpy(request->protocol, protocol_str);
   
   return PARSE_OK;
 }
