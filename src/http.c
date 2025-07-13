@@ -12,7 +12,7 @@ parse_result_e parse_http_method(const char *method) {
 }
 
 parse_result_e parse_http_path(const char *path) {
-  if (strlen(path) == 0 || path[0] != '/' || strlen(path) > HTTP_PATH_LEN) {
+  if (strlen(path) == 0 || path[0] != '/' || strlen(path) > HTTP_PATH_LEN - 1) {
     return PARSE_INVALID_PATH;
   }
   if (strchr(path, ' ') != NULL) {
