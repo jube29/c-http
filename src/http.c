@@ -65,6 +65,7 @@ parse_result_e parse_http_request(const char *data, http_request_t *request) {
   char request_line[HTTP_REQUEST_LINE_LEN];
   size_t line_len = line_end - data;
   if (line_len >= sizeof(request_line) - 1) {
+    // Defensive: can't store this request line safely
     return PARSE_MALFORMED_REQUEST_LINE;
   }
   

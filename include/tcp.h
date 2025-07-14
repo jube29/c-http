@@ -6,7 +6,7 @@
 #include <poll.h>
 
 #define MAX_CLIENTS 10
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 
 typedef enum {
     SERVER_OK = 0,
