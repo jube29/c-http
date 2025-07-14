@@ -32,7 +32,7 @@ parse_result_e parse_http_request_line(const char *line, http_request_t *request
   char method_str[HTTP_METHOD_LEN], path_str[HTTP_PATH_LEN], protocol_str[HTTP_PROTOCOL_LEN];
   
   if (sscanf(line, "%7s %255s %15s", method_str, path_str, protocol_str) != 3) {
-    return PARSE_MALFORMED_LINE;
+    return PARSE_MALFORMED_REQUEST_LINE;
   }
 
   parse_result_e method_parse_result = parse_http_method(method_str);
@@ -59,13 +59,13 @@ parse_result_e parse_http_request_line(const char *line, http_request_t *request
 parse_result_e parse_http_request(const char *data, http_request_t *request) {
   const char *line_end = strstr(data, "\r\n");
   if (line_end == NULL) {
-    return PARSE_MALFORMED_LINE;
+    return PARSE_UNTERMINATED_REQUEST_LINE;
   }
   
   char request_line[HTTP_REQUEST_LINE_LEN];
   size_t line_len = line_end - data;
   if (line_len >= sizeof(request_line) - 1) {
-    return PARSE_MALFORMED_LINE;
+    return PARSE_MALFORMED_REQUEST_LINE;
   }
   
   strncpy(request_line, data, line_len);
