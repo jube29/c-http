@@ -1,36 +1,31 @@
 #ifndef TCP_H
 #define TCP_H
 
-#include <sys/socket.h>
 #include <netinet/in.h>
 #include <poll.h>
+#include <sys/socket.h>
 
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 4096
 
-typedef enum {
-    SERVER_OK = 0,
-    SERVER_SOCKET_ERROR,
-    SERVER_BIND_ERROR,
-    SERVER_LISTEN_ERROR
-} server_status_e;
+typedef enum { SERVER_OK = 0, SERVER_SOCKET_ERROR, SERVER_BIND_ERROR, SERVER_LISTEN_ERROR } server_status_e;
 
 typedef struct {
-    int socket_fd;
-    struct sockaddr_in address;
+  int socket_fd;
+  struct sockaddr_in address;
 } tcp_server;
 
 typedef struct {
-    int fd;
-    char buffer[BUFFER_SIZE];
-    size_t buffer_len;
+  int fd;
+  char buffer[BUFFER_SIZE];
+  size_t buffer_len;
 } client_connection;
 
 typedef struct {
-    client_connection clients[MAX_CLIENTS];
-    int client_count;
-    struct pollfd poll_fds[MAX_CLIENTS + 1];
-    int poll_count;
+  client_connection clients[MAX_CLIENTS];
+  int client_count;
+  struct pollfd poll_fds[MAX_CLIENTS + 1];
+  int poll_count;
 } connection_manager;
 
 server_status_e bind_tcp_port(tcp_server *server);
@@ -43,3 +38,4 @@ void handle_new_connection(connection_manager *manager, int server_fd);
 void run_server(tcp_server *server);
 
 #endif // TCP_H
+
