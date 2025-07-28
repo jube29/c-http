@@ -5,7 +5,9 @@
 #include <string.h>
 
 parse_result_e parse_http_method(const char *method) {
-  if (strcmp(method, "GET") == 0) {
+  if (strcmp(method, "GET") == 0 || 
+      strcmp(method, "POST") == 0 || 
+      strcmp(method, "DELETE") == 0) {
     return PARSE_OK;
   } else {
     return PARSE_INVALID_METHOD;

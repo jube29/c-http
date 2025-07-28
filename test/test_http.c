@@ -7,6 +7,20 @@
 
 Test(http, should_parse_get) { cr_assert(parse_http_method("GET") == PARSE_OK, "GET method should be parsed"); }
 
+Test(http, should_parse_post) { cr_assert(parse_http_method("POST") == PARSE_OK, "POST method should be parsed"); }
+
+Test(http, should_parse_delete) {
+  cr_assert(parse_http_method("DELETE") == PARSE_OK, "DELETE method should be parsed");
+}
+
+Test(http, should_not_parse_put) {
+  cr_assert(parse_http_method("PUT") == PARSE_INVALID_METHOD, "PUT method should not be parsed");
+}
+
+Test(http, should_not_parse_patch) {
+  cr_assert(parse_http_method("PATCH") == PARSE_INVALID_METHOD, "PATCH method should not be parsed");
+}
+
 // Protocol Parsing
 
 Test(http, should_parse_protocol_http_1_1) {
@@ -58,14 +72,6 @@ Test(http, should_not_parse_malformed_request_line_missing_parts) {
             "Request line missing path and protocol should not be parsed");
   cr_assert(parse_http_request_line("", &request) == PARSE_MALFORMED_REQUEST_LINE,
             "Empty request line should not be parsed");
-}
-
-Test(http, should_not_parse_request_line_with_invalid_method) {
-  http_request_t request = {0};
-  cr_assert(parse_http_request_line("POST /index.html HTTP/1.1", &request) == PARSE_INVALID_METHOD,
-            "Request line with invalid method should not be parsed");
-  cr_assert(parse_http_request_line("DELETE /index.html HTTP/1.1", &request) == PARSE_INVALID_METHOD,
-            "Request line with invalid method should not be parsed");
 }
 
 Test(http, should_not_parse_request_line_with_invalid_path) {
