@@ -1,6 +1,7 @@
 #include "http.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 parse_result_e parse_http_method(const char *method) {
@@ -77,6 +78,126 @@ parse_result_e parse_http_request(const char *data, http_request_t *request) {
     return result;
   }
 
+  const char *headers_start = line_end + 2; // Skip \r\n after request line
+  const char *headers_end = strstr(headers_start, "\r\n\r\n");
+  if (headers_end == NULL) {
+    // No end of headers found
+    return PARSE_MALFORMED_REQUEST_LINE;
+  }
+
+  size_t headers_len = headers_end - headers_start;
+  if (headers_len > HTTP_MAX_HEADERS_SIZE) {
+    return PARSE_HEADERS_TOO_LARGE;
+  }
+
+  result = parse_http_headers(headers_start, request);
+  if (result != PARSE_OK) {
+    return result;
+  }
+
   return PARSE_OK;
+}
+
+parse_result_e parse_http_headers(const char *headers, http_request_t *request) {
+  request->headers = NULL;
+  request->headers_count = 0;
+
+  if (strlen(headers) == 0) {
+    return PARSE_OK;
+  }
+
+  // Count headers first
+  const char *ptr = headers;
+  size_t count = 0;
+  while (ptr && *ptr) {
+    const char *line_end = strstr(ptr, "\r\n");
+    if (line_end == NULL)
+      break;
+
+    count++;
+    if (count > HTTP_MAX_HEADERS) {
+      return PARSE_TOO_MANY_HEADERS;
+    }
+
+    ptr = line_end + 2;
+  }
+
+  // Allocate memory for headers
+  request->headers = malloc(count * sizeof(http_header_t));
+  if (request->headers == NULL) {
+    return PARSE_MEMORY_ERROR;
+  }
+
+  // Parse each header
+  ptr = headers;
+  size_t header_idx = 0;
+  while (ptr && *ptr && header_idx < count) {
+    const char *line_end = strstr(ptr, "\r\n");
+    if (line_end == NULL)
+      break;
+
+    size_t line_len = line_end - ptr;
+    char line[line_len + 1];
+    strncpy(line, ptr, line_len);
+    line[line_len] = '\0';
+
+    // Find colon separator
+    char *colon = strchr(line, ':');
+    if (colon == NULL) {
+      free(request->headers);
+      request->headers = NULL;
+      return PARSE_MALFORMED_HEADERS;
+    }
+    *colon = '\0';
+    char *key = line;
+    char *value = colon + 1;
+
+    // Trim leading spaces
+    while (*key == ' ')
+      key++;
+    while (*value == ' ')
+      value++;
+
+    // Trim trailing spaces
+    char *key_end = key + strlen(key) - 1;
+    while (key_end > key && *key_end == ' ') {
+      *key_end = '\0';
+      key_end--;
+    }
+    char *value_end = value + strlen(value) - 1;
+    while (value_end > value && *value_end == ' ') {
+      *value_end = '\0';
+      value_end--;
+    }
+
+    // Check lengths
+    if (strlen(key) >= HTTP_HEADER_KEY_LEN) {
+      free(request->headers);
+      request->headers = NULL;
+      return PARSE_HEADER_KEY_TOO_LARGE;
+    }
+    if (strlen(value) >= HTTP_HEADER_VALUE_LEN) {
+      free(request->headers);
+      request->headers = NULL;
+      return PARSE_HEADER_VALUE_TOO_LARGE;
+    }
+
+    strcpy(request->headers[header_idx].key, key);
+    strcpy(request->headers[header_idx].value, value);
+    header_idx++;
+
+    ptr = line_end + 2;
+  }
+
+  request->headers_count = header_idx;
+  return PARSE_OK;
+}
+
+void free_http_headers(http_request_t *request) {
+  if (request->headers) {
+    free(request->headers);
+    request->headers = NULL;
+    request->headers_count = 0;
+  }
 }
 
