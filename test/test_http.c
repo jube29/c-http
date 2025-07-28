@@ -343,3 +343,84 @@ Test(http, should_handle_multiple_free_calls_safely) {
   cr_assert_null(request.headers, "Headers should remain NULL after second free");
 }
 
+// Complete HTTP Request Parsing (Happy Path)
+
+Test(http, should_parse_complete_http_request_with_headers) {
+  http_request_t request = {0};
+  const char *http_data = "GET /api/users HTTP/1.1\r\n"
+                          "Host: example.com\r\n"
+                          "User-Agent: TestClient/1.0\r\n"
+                          "Accept: application/json\r\n"
+                          "Authorization: Bearer token123\r\n\r\n";
+  
+  parse_result_e result = parse_http_request(http_data, &request);
+  
+  // Check parsing result
+  cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
+  
+  // Validate request line components
+  cr_assert_str_eq(request.method, "GET", "Expected method 'GET', got '%s'", request.method);
+  cr_assert_str_eq(request.path, "/api/users", "Expected path '/api/users', got '%s'", request.path);
+  cr_assert_str_eq(request.protocol, "HTTP/1.1", "Expected protocol 'HTTP/1.1', got '%s'", request.protocol);
+  
+  // Validate headers
+  cr_assert_eq(request.headers_count, 4, "Expected 4 headers, got %d", (int)request.headers_count);
+  
+  // Check Host header
+  cr_assert_str_eq(request.headers[0].key, "Host", "Expected header[0] key 'Host', got '%s'", request.headers[0].key);
+  cr_assert_str_eq(request.headers[0].value, "example.com", "Expected header[0] value 'example.com', got '%s'", request.headers[0].value);
+  
+  // Check User-Agent header
+  cr_assert_str_eq(request.headers[1].key, "User-Agent", "Expected header[1] key 'User-Agent', got '%s'", request.headers[1].key);
+  cr_assert_str_eq(request.headers[1].value, "TestClient/1.0", "Expected header[1] value 'TestClient/1.0', got '%s'", request.headers[1].value);
+  
+  // Check Accept header
+  cr_assert_str_eq(request.headers[2].key, "Accept", "Expected header[2] key 'Accept', got '%s'", request.headers[2].key);
+  cr_assert_str_eq(request.headers[2].value, "application/json", "Expected header[2] value 'application/json', got '%s'", request.headers[2].value);
+  
+  // Check Authorization header
+  cr_assert_str_eq(request.headers[3].key, "Authorization", "Expected header[3] key 'Authorization', got '%s'", request.headers[3].key);
+  cr_assert_str_eq(request.headers[3].value, "Bearer token123", "Expected header[3] value 'Bearer token123', got '%s'", request.headers[3].value);
+  
+  free_http_headers(&request);
+}
+
+Test(http, should_parse_minimal_complete_http_request) {
+  http_request_t request = {0};
+  const char *http_data = "GET / HTTP/1.1\r\n"
+                          "Host: localhost\r\n\r\n";
+  
+  parse_result_e result = parse_http_request(http_data, &request);
+  
+  cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
+  cr_assert_str_eq(request.method, "GET", "Expected method 'GET', got '%s'", request.method);
+  cr_assert_str_eq(request.path, "/", "Expected path '/', got '%s'", request.path);
+  cr_assert_str_eq(request.protocol, "HTTP/1.1", "Expected protocol 'HTTP/1.1', got '%s'", request.protocol);
+  cr_assert_eq(request.headers_count, 1, "Expected 1 header, got %d", (int)request.headers_count);
+  cr_assert_str_eq(request.headers[0].key, "Host", "Expected header key 'Host', got '%s'", request.headers[0].key);
+  cr_assert_str_eq(request.headers[0].value, "localhost", "Expected header value 'localhost', got '%s'", request.headers[0].value);
+  
+  free_http_headers(&request);
+}
+
+Test(http, should_parse_complete_http_request_without_headers) {
+  http_request_t request = {0};
+  const char *http_data = "GET /index.html HTTP/1.1\r\n\r\n";
+  
+  parse_result_e result = parse_http_request(http_data, &request);
+  
+  // Check parsing result
+  cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
+  
+  // Validate request line components
+  cr_assert_str_eq(request.method, "GET", "Expected method 'GET', got '%s'", request.method);
+  cr_assert_str_eq(request.path, "/index.html", "Expected path '/index.html', got '%s'", request.path);
+  cr_assert_str_eq(request.protocol, "HTTP/1.1", "Expected protocol 'HTTP/1.1', got '%s'", request.protocol);
+  
+  // Validate no headers
+  cr_assert_eq(request.headers_count, 0, "Expected 0 headers, got %d", (int)request.headers_count);
+  cr_assert_null(request.headers, "Expected headers to be NULL, got %p", request.headers);
+  
+  free_http_headers(&request);
+}
+

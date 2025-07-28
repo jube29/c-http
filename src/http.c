@@ -78,11 +78,17 @@ parse_result_e parse_http_request(const char *data, http_request_t *request) {
     return result;
   }
 
-  const char *headers_start = line_end + 2; // Skip \r\n after request line
-  const char *headers_end = strstr(headers_start, "\r\n\r\n");
-  if (headers_end == NULL) {
-    // No end of headers found
-    return PARSE_MALFORMED_REQUEST_LINE;
+  const char *headers_start = line_end + 2;
+  const char *headers_end = headers_start;
+  while (headers_end && *headers_end) {
+    if (strncmp(headers_end, "\r\n", 2) == 0) {
+      break;
+    }
+    const char *line_end = strstr(headers_end, "\r\n");
+    if (line_end == NULL) {
+      return PARSE_MALFORMED_HEADERS;
+    }
+    headers_end = line_end + 2;
   }
 
   size_t headers_len = headers_end - headers_start;
@@ -102,7 +108,7 @@ parse_result_e parse_http_headers(const char *headers, http_request_t *request) 
   request->headers = NULL;
   request->headers_count = 0;
 
-  if (strlen(headers) == 0) {
+  if (strlen(headers) == 2 && strncmp(headers, "\r\n", 2) == 0) {
     return PARSE_OK;
   }
 
@@ -114,7 +120,9 @@ parse_result_e parse_http_headers(const char *headers, http_request_t *request) 
     if (line_end == NULL)
       break;
 
-    count++;
+    if (strlen(ptr) > 0)
+      count++;
+
     if (count > HTTP_MAX_HEADERS) {
       return PARSE_TOO_MANY_HEADERS;
     }
@@ -137,6 +145,10 @@ parse_result_e parse_http_headers(const char *headers, http_request_t *request) 
       break;
 
     size_t line_len = line_end - ptr;
+    if (line_len == 0) {
+      break;
+    }
+
     char line[line_len + 1];
     strncpy(line, ptr, line_len);
     line[line_len] = '\0';
