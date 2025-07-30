@@ -10,7 +10,7 @@
 #define HTTP_HEADER_VALUE_LEN 512
 #define HTTP_MAX_HEADERS 10
 #define HTTP_MAX_HEADERS_SIZE 8192
-#define HTTP_MAX_BODY_SIZE 1048576 // 1MB
+#define HTTP_MAX_BODY_SIZE 1048576
 
 typedef enum {
   PARSE_OK,
@@ -58,5 +58,5 @@ void free_http_headers(http_request_t *request);
 void free_http_body(http_request_t *request);
 void free_http_request(http_request_t *request);
 
-#endif // HTTP_H
+#endif
 

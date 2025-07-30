@@ -37,5 +37,5 @@ void handle_client_data(connection_manager *manager, int index);
 void handle_new_connection(connection_manager *manager, int server_fd);
 void run_server(tcp_server *server);
 
-#endif // TCP_H
+#endif
 

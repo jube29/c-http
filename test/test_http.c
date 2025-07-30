@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Method Parsing
 
 Test(http, should_parse_get) { cr_assert(parse_http_method("GET") == PARSE_OK, "GET method should be parsed"); }
 
@@ -22,13 +21,11 @@ Test(http, should_not_parse_patch) {
   cr_assert(parse_http_method("PATCH") == PARSE_INVALID_METHOD, "PATCH method should not be parsed");
 }
 
-// Protocol Parsing
 
 Test(http, should_parse_protocol_http_1_1) {
   cr_assert(parse_http_protocol("HTTP/1.1") == PARSE_OK, "HTTP/1.1 protocol should be parsed");
 }
 
-// Path Parsing
 
 Test(http, should_parse_valid_basic_path) {
   cr_assert(parse_http_path("/foo.html") == PARSE_OK, "Valid path should be parsed");
@@ -54,7 +51,6 @@ Test(http, should_not_parse_path_with_space_in) {
   cr_assert(parse_http_path("bar html") == PARSE_INVALID_PATH, "Path with space in should not be parsed");
 }
 
-// Request Line Parsing
 
 Test(http, should_parse_valid_request_line) {
   http_request_t request = {0};
@@ -124,7 +120,6 @@ Test(http, should_parse_request_line_with_complex_valid_path) {
   cr_assert_str_eq(request.path, "/path/to/resource.html", "Path should be /path/to/resource.html");
 }
 
-// Headers Parsing
 
 Test(http, should_parse_single_header) {
   http_request_t request = {0};
@@ -147,15 +142,12 @@ Test(http, should_parse_multiple_headers) {
 
   cr_assert_eq(request.headers_count, 3, "Should parse exactly 3 headers, got %d", (int)request.headers_count);
 
-  // Check first header
   cr_assert_str_eq(request.headers[0].key, "Host", "First header key should be 'Host'");
   cr_assert_str_eq(request.headers[0].value, "example.com", "First header value should be 'example.com'");
 
-  // Check second header
   cr_assert_str_eq(request.headers[1].key, "User-Agent", "Second header key should be 'User-Agent'");
   cr_assert_str_eq(request.headers[1].value, "TestAgent/1.0", "Second header value should be 'TestAgent/1.0'");
 
-  // Check third header
   cr_assert_str_eq(request.headers[2].key, "Accept", "Third header key should be 'Accept'");
   cr_assert_str_eq(request.headers[2].value, "text/html", "Third header value should be 'text/html'");
 
@@ -291,7 +283,6 @@ Test(http, should_handle_common_http_headers) {
 
   cr_assert_eq(request.headers_count, 7, "Should parse exactly 7 headers");
 
-  // Verify some key headers
   cr_assert_str_eq(request.headers[0].key, "Host", "First header should be Host");
   cr_assert_str_eq(request.headers[0].value, "www.example.com:8080", "Host value should include port");
 
@@ -301,7 +292,6 @@ Test(http, should_handle_common_http_headers) {
   free_http_headers(&request);
 }
 
-// Memory Management Tests
 
 Test(http, should_properly_initialize_headers_to_null) {
   http_request_t request = {0};
@@ -314,7 +304,6 @@ Test(http, should_free_headers_safely_when_null) {
   request.headers = NULL;
   request.headers_count = 0;
 
-  // This should not crash
   free_http_headers(&request);
 
   cr_assert_null(request.headers, "Headers should remain NULL after free");
@@ -341,16 +330,13 @@ Test(http, should_handle_multiple_free_calls_safely) {
   const char *raw_headers = "Host: example.com\r\n";
   parse_http_headers(raw_headers, &request);
 
-  // First free
   free_http_headers(&request);
   cr_assert_null(request.headers, "Headers should be NULL after first free");
 
-  // Second free should not crash
   free_http_headers(&request);
   cr_assert_null(request.headers, "Headers should remain NULL after second free");
 }
 
-// Complete HTTP Request Parsing (Happy Path)
 
 Test(http, should_parse_complete_http_request_with_headers) {
   http_request_t request = {0};
@@ -362,35 +348,28 @@ Test(http, should_parse_complete_http_request_with_headers) {
 
   parse_result_e result = parse_http_request(http_data, &request);
 
-  // Check parsing result
   cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
 
-  // Validate request line components
   cr_assert_str_eq(request.method, "GET", "Expected method 'GET', got '%s'", request.method);
   cr_assert_str_eq(request.path, "/api/users", "Expected path '/api/users', got '%s'", request.path);
   cr_assert_str_eq(request.protocol, "HTTP/1.1", "Expected protocol 'HTTP/1.1', got '%s'", request.protocol);
 
-  // Validate headers
   cr_assert_eq(request.headers_count, 4, "Expected 4 headers, got %d", (int)request.headers_count);
 
-  // Check Host header
   cr_assert_str_eq(request.headers[0].key, "Host", "Expected header[0] key 'Host', got '%s'", request.headers[0].key);
   cr_assert_str_eq(request.headers[0].value, "example.com", "Expected header[0] value 'example.com', got '%s'",
                    request.headers[0].value);
 
-  // Check User-Agent header
   cr_assert_str_eq(request.headers[1].key, "User-Agent", "Expected header[1] key 'User-Agent', got '%s'",
                    request.headers[1].key);
   cr_assert_str_eq(request.headers[1].value, "TestClient/1.0", "Expected header[1] value 'TestClient/1.0', got '%s'",
                    request.headers[1].value);
 
-  // Check Accept header
   cr_assert_str_eq(request.headers[2].key, "Accept", "Expected header[2] key 'Accept', got '%s'",
                    request.headers[2].key);
   cr_assert_str_eq(request.headers[2].value, "text/plain", "Expected header[2] value 'text/plain', got '%s'",
                    request.headers[2].value);
 
-  // Check Authorization header
   cr_assert_str_eq(request.headers[3].key, "Authorization", "Expected header[3] key 'Authorization', got '%s'",
                    request.headers[3].key);
   cr_assert_str_eq(request.headers[3].value, "Bearer token123", "Expected header[3] value 'Bearer token123', got '%s'",
@@ -424,22 +403,18 @@ Test(http, should_parse_complete_http_request_without_headers) {
 
   parse_result_e result = parse_http_request(http_data, &request);
 
-  // Check parsing result
   cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
 
-  // Validate request line components
   cr_assert_str_eq(request.method, "GET", "Expected method 'GET', got '%s'", request.method);
   cr_assert_str_eq(request.path, "/index.html", "Expected path '/index.html', got '%s'", request.path);
   cr_assert_str_eq(request.protocol, "HTTP/1.1", "Expected protocol 'HTTP/1.1', got '%s'", request.protocol);
 
-  // Validate no headers
   cr_assert_eq(request.headers_count, 0, "Expected 0 headers, got %d", (int)request.headers_count);
   cr_assert_null(request.headers, "Expected headers to be NULL, got %p", request.headers);
 
   free_http_headers(&request);
 }
 
-// HTTP Body Parsing Tests - Happy Path
 
 Test(http, should_parse_post_request_with_simple_body) {
   http_request_t request = {0};
@@ -452,11 +427,9 @@ Test(http, should_parse_post_request_with_simple_body) {
   parse_result_e result = parse_http_request(http_data, &request);
   cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
 
-  // Validate request line
   cr_assert_str_eq(request.method, "POST", "Expected method 'POST', got '%s'", request.method);
   cr_assert_str_eq(request.path, "/api/users", "Expected path '/api/users', got '%s'", request.path);
 
-  // Test body parsing
   const char *body_start = strstr(http_data, "\r\n\r\n") + 4;
   size_t remaining_length = strlen(http_data) - (body_start - http_data);
   parse_result_e body_result = parse_http_body(body_start, remaining_length, &request);
@@ -546,7 +519,6 @@ Test(http, should_get_header_value_by_key) {
   free_http_headers(&request);
 }
 
-// HTTP Body Parsing Tests - Common Pitfalls
 
 Test(http, should_reject_body_larger_than_max_size) {
   http_request_t request = {0};
@@ -566,7 +538,6 @@ Test(http, should_reject_body_larger_than_max_size) {
   strcat(http_data, large_content_length);
   strcat(http_data, http_data_suffix);
 
-  // Add body data matching the declared Content-Length
   memset(http_data + request_size, 'A', oversized_length);
   http_data[request_size + oversized_length] = '\0';
 
@@ -660,7 +631,6 @@ Test(http, should_handle_body_with_null_bytes) {
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 11\r\n\r\n";
 
-  // Create full HTTP data with null bytes in body
   char *full_data = malloc(strlen(http_data) + 11 + 1);
   strcpy(full_data, http_data);
   char *body_pos = full_data + strlen(http_data);
@@ -674,7 +644,6 @@ Test(http, should_handle_body_with_null_bytes) {
   cr_assert_eq(body_result, PARSE_OK, "Expected PARSE_OK for body with null bytes, got %d", body_result);
   cr_assert_eq(request.body_length, 11, "Expected body length 11, got %zu", request.body_length);
 
-  // Verify null byte is preserved
   cr_assert_eq(request.body[5], '\0', "Expected null byte at position 5");
   cr_assert_eq(request.body[6], 'W', "Expected 'W' at position 6");
 
@@ -731,7 +700,6 @@ Test(http, should_handle_whitespace_only_body) {
   free_http_request(&request);
 }
 
-// Content-Type Validation Tests
 
 Test(http, should_accept_text_plain_content_type) {
   http_request_t request = {0};
