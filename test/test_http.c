@@ -472,6 +472,7 @@ Test(http, should_parse_request_with_empty_body) {
   http_request_t request = {0};
   const char *http_data = "POST /api/data HTTP/1.1\r\n"
                           "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
                           "Content-Length: 0\r\n\r\n";
 
   parse_result_e result = parse_http_request(http_data, &request);
@@ -555,6 +556,7 @@ Test(http, should_reject_body_larger_than_max_size) {
 
   const char *http_data_prefix = "POST /api HTTP/1.1\r\n"
                                  "Host: example.com\r\n"
+                                 "Content-Type: text/plain\r\n"
                                  "Content-Length: ";
   const char *http_data_suffix = "\r\n\r\n";
 
@@ -580,6 +582,7 @@ Test(http, should_reject_invalid_content_length_header) {
   http_request_t request = {0};
   const char *http_data = "POST /api HTTP/1.1\r\n"
                           "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
                           "Content-Length: invalid\r\n\r\n"
                           "test body";
 
@@ -594,6 +597,7 @@ Test(http, should_reject_negative_content_length) {
   http_request_t request = {0};
   const char *http_data = "POST /api HTTP/1.1\r\n"
                           "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
                           "Content-Length: -5\r\n\r\n"
                           "test";
 
@@ -608,6 +612,7 @@ Test(http, should_reject_content_length_mismatch) {
   http_request_t request = {0};
   const char *http_data = "POST /api HTTP/1.1\r\n"
                           "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
                           "Content-Length: 50\r\n\r\n"
                           "Short body";
 
@@ -622,6 +627,7 @@ Test(http, should_handle_incomplete_body_data) {
   http_request_t request = {0};
   const char *http_data = "POST /api HTTP/1.1\r\n"
                           "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
                           "Content-Length: 20\r\n\r\n"
                           "Incomplete";
 
@@ -636,6 +642,7 @@ Test(http, should_reject_multiple_content_length_headers) {
   http_request_t request = {0};
   const char *http_data = "POST /api HTTP/1.1\r\n"
                           "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
                           "Content-Length: 10\r\n"
                           "Content-Length: 20\r\n\r\n"
                           "test body1";
@@ -650,6 +657,7 @@ Test(http, should_handle_body_with_null_bytes) {
   http_request_t request = {0};
   const char *http_data = "POST /api HTTP/1.1\r\n"
                           "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
                           "Content-Length: 11\r\n\r\n";
 
   // Create full HTTP data with null bytes in body
@@ -678,6 +686,7 @@ Test(http, should_handle_zero_content_length_with_no_body) {
   http_request_t request = {0};
   const char *http_data = "POST /api HTTP/1.1\r\n"
                           "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
                           "Content-Length: 0\r\n\r\n";
 
   parse_result_e result = parse_http_request(http_data, &request);
@@ -702,6 +711,7 @@ Test(http, should_handle_whitespace_only_body) {
   char *http_data = malloc(200 + strlen(whitespace_body));
   strcpy(http_data, "POST /api HTTP/1.1\r\n"
                     "Host: example.com\r\n"
+                    "Content-Type: text/plain\r\n"
                     "Content-Length: ");
   strcat(http_data, content_length_str);
   strcat(http_data, "\r\n\r\n");
@@ -718,6 +728,77 @@ Test(http, should_handle_whitespace_only_body) {
                strlen(whitespace_body), request.body_length);
 
   free(http_data);
+  free_http_request(&request);
+}
+
+// Content-Type Validation Tests
+
+Test(http, should_accept_text_plain_content_type) {
+  http_request_t request = {0};
+  const char *http_data = "POST /api HTTP/1.1\r\n"
+                          "Host: example.com\r\n"
+                          "Content-Type: text/plain\r\n"
+                          "Content-Length: 5\r\n\r\n"
+                          "hello";
+
+  parse_result_e result = parse_http_request(http_data, &request);
+  cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK for text/plain content type, got error code %d", result);
+
+  free_http_request(&request);
+}
+
+Test(http, should_reject_application_json_content_type) {
+  http_request_t request = {0};
+  const char *http_data = "POST /api HTTP/1.1\r\n"
+                          "Host: example.com\r\n"
+                          "Content-Type: application/json\r\n"
+                          "Content-Length: 13\r\n\r\n"
+                          "{\"key\":\"val\"}";
+
+  parse_result_e result = parse_http_request(http_data, &request);
+  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE, 
+               "Expected PARSE_UNSUPPORTED_CONTENT_TYPE for application/json, got error code %d", result);
+
+  free_http_request(&request);
+}
+
+Test(http, should_reject_text_html_content_type) {
+  http_request_t request = {0};
+  const char *http_data = "POST /api HTTP/1.1\r\n"
+                          "Host: example.com\r\n"
+                          "Content-Type: text/html\r\n"
+                          "Content-Length: 13\r\n\r\n"
+                          "<html></html>";
+
+  parse_result_e result = parse_http_request(http_data, &request);
+  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE, 
+               "Expected PARSE_UNSUPPORTED_CONTENT_TYPE for text/html, got error code %d", result);
+
+  free_http_request(&request);
+}
+
+Test(http, should_reject_post_request_without_content_type_header) {
+  http_request_t request = {0};
+  const char *http_data = "POST /api HTTP/1.1\r\n"
+                          "Host: example.com\r\n"
+                          "Content-Length: 5\r\n\r\n"
+                          "hello";
+
+  parse_result_e result = parse_http_request(http_data, &request);
+  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE, 
+               "Expected PARSE_UNSUPPORTED_CONTENT_TYPE for POST without Content-Type header, got error code %d", result);
+
+  free_http_request(&request);
+}
+
+Test(http, should_accept_get_request_without_content_type_header) {
+  http_request_t request = {0};
+  const char *http_data = "GET /api HTTP/1.1\r\n"
+                          "Host: example.com\r\n\r\n";
+
+  parse_result_e result = parse_http_request(http_data, &request);
+  cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK for GET without Content-Type header, got error code %d", result);
+
   free_http_request(&request);
 }
 

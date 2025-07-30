@@ -107,6 +107,23 @@ parse_result_e parse_http_request(const char *data, http_request_t *request) {
   // Count the actual body length
   size_t actual_body_length = strlen(body_start);
 
+  // Check Content-Type header - only accept text/plain
+  const char *content_type_str = get_header_value(request, "Content-Type");
+  if (strcmp(request->method, "POST") == 0) {
+    // POST requests must have Content-Type header
+    if (content_type_str == NULL) {
+      return PARSE_UNSUPPORTED_CONTENT_TYPE;
+    }
+    if (strcmp(content_type_str, "text/plain") != 0) {
+      return PARSE_UNSUPPORTED_CONTENT_TYPE;
+    }
+  } else if (content_type_str != NULL) {
+    // For non-POST requests, if Content-Type is present, it must be text/plain
+    if (strcmp(content_type_str, "text/plain") != 0) {
+      return PARSE_UNSUPPORTED_CONTENT_TYPE;
+    }
+  }
+
   // Check Content-Length header if present
   const char *content_length_str = get_header_value(request, "Content-Length");
   if (content_length_str != NULL) {
