@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 
 #define MAX_CLIENTS 10
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1500000
 
 typedef enum { SERVER_OK = 0, SERVER_SOCKET_ERROR, SERVER_BIND_ERROR, SERVER_LISTEN_ERROR } server_status_e;
 

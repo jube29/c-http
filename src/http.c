@@ -1,13 +1,12 @@
 #include "http.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 parse_result_e parse_http_method(const char *method) {
-  if (strcmp(method, "GET") == 0 || 
-      strcmp(method, "POST") == 0 || 
-      strcmp(method, "DELETE") == 0) {
+  if (strcmp(method, "GET") == 0 || strcmp(method, "POST") == 0 || strcmp(method, "DELETE") == 0) {
     return PARSE_OK;
   } else {
     return PARSE_INVALID_METHOD;
@@ -99,6 +98,40 @@ parse_result_e parse_http_request(const char *data, http_request_t *request) {
   }
 
   result = parse_http_headers(headers_start, request);
+  if (result != PARSE_OK) {
+    return result;
+  }
+
+  const char *body_start = headers_end + 2;
+
+  // Count the actual body length
+  size_t actual_body_length = strlen(body_start);
+
+  // Check Content-Length header if present
+  const char *content_length_str = get_header_value(request, "Content-Length");
+  if (content_length_str != NULL) {
+    // Parse Content-Length value
+    char *endptr;
+    long content_length = strtol(content_length_str, &endptr, 10);
+
+    // Check if parsing was successful and value is valid
+    if (*endptr != '\0' || content_length < 0) {
+      return PARSE_CONTENT_LENGTH_INVALID;
+    }
+
+    // Compare actual body length with declared Content-Length
+    if ((size_t)content_length != actual_body_length) {
+      return PARSE_CONTENT_LENGTH_MISMATCH;
+    }
+  }
+
+  // Check if body size is within limits
+  if (actual_body_length > HTTP_MAX_BODY_SIZE) {
+    return PARSE_BODY_TOO_LARGE;
+  }
+
+  // Parse the body using the dedicated function
+  result = parse_http_body(body_start, actual_body_length, request);
   if (result != PARSE_OK) {
     return result;
   }
@@ -207,11 +240,58 @@ parse_result_e parse_http_headers(const char *headers, http_request_t *request) 
   return PARSE_OK;
 }
 
+parse_result_e parse_http_body(const char *data, size_t data_length, http_request_t *request) {
+  // Dynamically allocate memory for the body if it exists
+  if (data_length > 0) {
+    request->body = malloc(data_length + 1); // +1 for null terminator
+    if (request->body == NULL) {
+      return PARSE_MEMORY_ERROR;
+    }
+
+    // Copy the body data
+    memcpy(request->body, data, data_length);
+    request->body[data_length] = '\0'; // Null terminate for safety
+    request->body_length = data_length;
+  } else {
+    request->body = NULL;
+    request->body_length = 0;
+  }
+
+  return PARSE_OK;
+}
+
+const char *get_header_value(const http_request_t *request, const char *key) {
+  if (!request || !request->headers || !key) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < request->headers_count; i++) {
+    if (strcasecmp(key, request->headers[i].key) == 0) {
+      return request->headers[i].value;
+    }
+  }
+
+  return NULL;
+}
+
 void free_http_headers(http_request_t *request) {
   if (request->headers) {
     free(request->headers);
     request->headers = NULL;
     request->headers_count = 0;
   }
+}
+
+void free_http_body(http_request_t *request) {
+  if (request->body) {
+    free(request->body);
+    request->body = NULL;
+    request->body_length = 0;
+  }
+}
+
+void free_http_request(http_request_t *request) {
+  free_http_headers(request);
+  free_http_body(request);
 }
 

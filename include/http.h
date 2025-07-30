@@ -10,6 +10,7 @@
 #define HTTP_HEADER_VALUE_LEN 512
 #define HTTP_MAX_HEADERS 10
 #define HTTP_MAX_HEADERS_SIZE 8192
+#define HTTP_MAX_BODY_SIZE 1048576 // 1MB
 
 typedef enum {
   PARSE_OK,
@@ -23,7 +24,10 @@ typedef enum {
   PARSE_TOO_MANY_HEADERS,
   PARSE_HEADERS_TOO_LARGE,
   PARSE_HEADER_KEY_TOO_LARGE,
-  PARSE_HEADER_VALUE_TOO_LARGE
+  PARSE_HEADER_VALUE_TOO_LARGE,
+  PARSE_BODY_TOO_LARGE,
+  PARSE_CONTENT_LENGTH_INVALID,
+  PARSE_CONTENT_LENGTH_MISMATCH,
 } parse_result_e;
 
 typedef struct {
@@ -37,6 +41,8 @@ typedef struct {
   char protocol[HTTP_PROTOCOL_LEN];
   http_header_t *headers;
   size_t headers_count;
+  char *body;
+  size_t body_length;
 } http_request_t;
 
 parse_result_e parse_http_method(const char *method);
@@ -45,7 +51,11 @@ parse_result_e parse_http_protocol(const char *protocol);
 parse_result_e parse_http_request_line(const char *line, http_request_t *request);
 parse_result_e parse_http_request(const char *data, http_request_t *request);
 parse_result_e parse_http_headers(const char *headers, http_request_t *request);
+parse_result_e parse_http_body(const char *data, size_t data_length, http_request_t *request);
+const char *get_header_value(const http_request_t *request, const char *key);
 void free_http_headers(http_request_t *request);
+void free_http_body(http_request_t *request);
+void free_http_request(http_request_t *request);
 
 #endif // HTTP_H
 
