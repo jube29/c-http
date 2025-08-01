@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -138,36 +139,41 @@ void handle_new_connection(connection_manager *manager, int server_fd) {
 }
 
 void run_server(tcp_server *server) {
-  connection_manager manager;
-  init_connection_manager(&manager);
+  connection_manager *manager = malloc(sizeof(connection_manager));
+  if (manager == NULL) {
+    perror("Failed to allocate connection manager");
+    return;
+  }
+  init_connection_manager(manager);
 
-  manager.poll_fds[0].fd = server->socket_fd;
-  manager.poll_fds[0].events = POLLIN;
-  manager.poll_count = 1;
+  manager->poll_fds[0].fd = server->socket_fd;
+  manager->poll_fds[0].events = POLLIN;
+  manager->poll_count = 1;
 
   debug_log("Server running and waiting for connections...\n");
 
   while (1) {
-    int poll_result = poll(manager.poll_fds, manager.poll_count, -1);
+    int poll_result = poll(manager->poll_fds, manager->poll_count, -1);
     if (poll_result < 0) {
       perror("Poll failed");
       break;
     }
 
-    if (manager.poll_fds[0].revents & POLLIN) {
-      handle_new_connection(&manager, server->socket_fd);
+    if (manager->poll_fds[0].revents & POLLIN) {
+      handle_new_connection(manager, server->socket_fd);
     }
 
-    for (int i = manager.poll_count - 1; i >= 1; i--) {
-      if (manager.poll_fds[i].revents & POLLIN) {
-        handle_client_data(&manager, i - 1);
+    for (int i = manager->poll_count - 1; i >= 1; i--) {
+      if (manager->poll_fds[i].revents & POLLIN) {
+        handle_client_data(manager, i - 1);
       }
     }
   }
 
-  for (int i = 0; i < manager.client_count; i++) {
-    close(manager.clients[i].fd);
+  for (int i = 0; i < manager->client_count; i++) {
+    close(manager->clients[i].fd);
   }
+  free(manager);
   close(server->socket_fd);
 }
 
