@@ -288,6 +288,59 @@ void free_http_body(http_request_t *request) {
   }
 }
 
+int parse_result_to_status_code(parse_result_e result) {
+  switch (result) {
+    case PARSE_OK:
+      return 200;
+    case PARSE_INVALID_METHOD:
+      return 405;
+    case PARSE_INVALID_PATH:
+      return 400;
+    case PARSE_INVALID_PROTOCOL:
+      return 505;
+    case PARSE_MALFORMED_REQUEST_LINE:
+    case PARSE_UNTERMINATED_REQUEST_LINE:
+    case PARSE_MALFORMED_HEADERS:
+      return 400;
+    case PARSE_TOO_MANY_HEADERS:
+    case PARSE_HEADERS_TOO_LARGE:
+    case PARSE_HEADER_KEY_TOO_LARGE:
+    case PARSE_HEADER_VALUE_TOO_LARGE:
+    case PARSE_BODY_TOO_LARGE:
+      return 413;
+    case PARSE_CONTENT_LENGTH_INVALID:
+    case PARSE_CONTENT_LENGTH_MISMATCH:
+      return 400;
+    case PARSE_UNSUPPORTED_CONTENT_TYPE:
+      return 415;
+    case PARSE_MEMORY_ERROR:
+    default:
+      return 500;
+  }
+}
+
+const status_code_pair_t status_codes[] = {
+  {200, "OK"},
+  {201, "Created"},
+  {400, "Bad Request"},
+  {404, "Not Found"},
+  {405, "Method Not Allowed"},
+  {413, "Payload Too Large"},
+  {415, "Unsupported Media Type"},
+  {500, "Internal Server Error"},
+  {505, "HTTP Version Not Supported"},
+  {0, NULL}
+};
+
+const char *status_code_to_reason_phrase(int status_code) {
+  for (int i = 0; status_codes[i].phrase != NULL; i++) {
+    if (status_codes[i].code == status_code) {
+      return status_codes[i].phrase;
+    }
+  }
+  return "Unknown";
+}
+
 void free_http_request(http_request_t *request) {
   free_http_headers(request);
   free_http_body(request);

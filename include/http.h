@@ -32,6 +32,11 @@ typedef enum {
 } parse_result_e;
 
 typedef struct {
+  int code;
+  const char *phrase;
+} status_code_pair_t;
+
+typedef struct {
   char key[HTTP_HEADER_KEY_LEN];
   char value[HTTP_HEADER_VALUE_LEN];
 } http_header_t;
@@ -54,6 +59,9 @@ parse_result_e parse_http_request(const char *data, http_request_t *request);
 parse_result_e parse_http_headers(const char *headers, http_request_t *request);
 parse_result_e parse_http_body(const char *data, size_t data_length, http_request_t *request);
 const char *get_header_value(const http_request_t *request, const char *key);
+int parse_result_to_status_code(parse_result_e result);
+const char *status_code_to_reason_phrase(int status_code);
+extern const status_code_pair_t status_codes[];
 void free_http_headers(http_request_t *request);
 void free_http_body(http_request_t *request);
 void free_http_request(http_request_t *request);
