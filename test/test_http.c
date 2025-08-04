@@ -850,3 +850,94 @@ Test(http, should_build_status_line_for_parse_memory_error) {
                    "Expected reason phrase 'Internal Server Error', got '%s'", response.reason_phrase);
 }
 
+Test(http, should_build_response_headers_without_body) {
+  http_response_t response = {0};
+  response.body = NULL;
+  response.body_length = 0;
+
+  build_response_headers(&response);
+
+  cr_assert_eq(response.headers_count, 3, "Expected 3 headers, got %zu", response.headers_count);
+  cr_assert_not_null(response.headers, "Headers should not be NULL");
+  
+  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'", response.headers[0].key);
+  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'", response.headers[0].value);
+
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'", response.headers[1].key);
+  cr_assert_str_eq(response.headers[1].value, "0", "Expected Content-Length header value '0', got '%s'", response.headers[1].value);
+
+  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'", response.headers[2].key);
+  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'", response.headers[2].value);
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_response_headers_with_body) {
+  http_response_t response = {0};
+  const char *body_content = "Hello World!";
+  response.body = malloc(strlen(body_content) + 1);
+  strcpy(response.body, body_content);
+  response.body_length = strlen(body_content);
+
+  build_response_headers(&response);
+
+  cr_assert_eq(response.headers_count, 3, "Expected 3 headers, got %zu", response.headers_count);
+  cr_assert_not_null(response.headers, "Headers should not be NULL");
+
+  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'", response.headers[0].key);
+  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'", response.headers[0].value);
+
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'", response.headers[1].key);
+  cr_assert_str_eq(response.headers[1].value, "12", "Expected Content-Length header value '12', got '%s'", response.headers[1].value);
+
+  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'", response.headers[2].key);
+  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'", response.headers[2].value);
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_response_headers_with_empty_body) {
+  http_response_t response = {0};
+  response.body = malloc(1);
+  response.body[0] = '\0';
+  response.body_length = 0;
+
+  build_response_headers(&response);
+
+  cr_assert_eq(response.headers_count, 3, "Expected 3 headers for empty body, got %zu", response.headers_count);
+  cr_assert_not_null(response.headers, "Headers should not be NULL");
+  
+  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'", response.headers[0].key);
+  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'", response.headers[0].value);
+
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'", response.headers[1].key);
+  cr_assert_str_eq(response.headers[1].value, "0", "Expected Content-Length header value '0', got '%s'", response.headers[1].value);
+
+  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'", response.headers[2].key);
+  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'", response.headers[2].value);
+
+  free_http_response(&response);
+}
+
+Test(http, should_handle_null_response_in_build_response_headers) {
+  build_response_headers(NULL);
+}
+
+Test(http, should_build_response_headers_with_large_body) {
+  http_response_t response = {0};
+  size_t large_size = 1000;
+  response.body = malloc(large_size + 1);
+  memset(response.body, 'A', large_size);
+  response.body[large_size] = '\0';
+  response.body_length = large_size;
+
+  build_response_headers(&response);
+
+  cr_assert_eq(response.headers_count, 3, "Expected 3 headers, got %zu", response.headers_count);
+  
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'", response.headers[1].key);
+  cr_assert_str_eq(response.headers[1].value, "1000", "Expected Content-Length header value '1000', got '%s'", response.headers[1].value);
+
+  free_http_response(&response);
+}
+

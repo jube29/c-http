@@ -347,6 +347,31 @@ void build_status_line(parse_result_e result, http_response_t *response) {
   strcpy(response->reason_phrase, reason_phrase);
 }
 
+void build_response_headers(http_response_t *response) {
+  if (!response) {
+    return;
+  }
+
+  size_t header_count = 3;
+
+  response->headers = malloc(header_count * sizeof(http_header_t));
+  if (!response->headers) {
+    response->headers_count = 0;
+    return;
+  }
+
+  strcpy(response->headers[0].key, "Connection");
+  strcpy(response->headers[0].value, "close");
+
+  strcpy(response->headers[1].key, "Content-Length");
+  snprintf(response->headers[1].value, HTTP_HEADER_VALUE_LEN, "%zu", response->body_length);
+
+  strcpy(response->headers[2].key, "Content-Type");
+  strcpy(response->headers[2].value, "text/plain");
+
+  response->headers_count = header_count;
+}
+
 void free_http_request(http_request_t *request) {
   free_http_headers(request);
   free_http_body(request);

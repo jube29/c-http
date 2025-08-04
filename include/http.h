@@ -75,6 +75,7 @@ const char *get_header_value(const http_request_t *request, const char *key);
 uint16_t parse_result_to_status_code(parse_result_e result);
 const char *status_code_to_reason_phrase(uint16_t status_code);
 void build_status_line(parse_result_e result, http_response_t *response);
+void build_response_headers(http_response_t *response);
 extern const status_code_pair_t status_codes[];
 void free_http_headers(http_request_t *request);
 void free_http_body(http_request_t *request);
