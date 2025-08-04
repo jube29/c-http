@@ -941,3 +941,96 @@ Test(http, should_build_response_headers_with_large_body) {
   free_http_response(&response);
 }
 
+Test(http, should_set_response_body_with_valid_string) {
+  http_response_t response = {0};
+  const char *body_text = "Hello, World!";
+  
+  parse_result_e result = set_response_body(&response, body_text);
+  
+  cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, body_text, "Response body should match input");
+  cr_assert_eq(response.body_length, strlen(body_text), "Body length should match string length");
+  
+  free_http_response(&response);
+}
+
+Test(http, should_set_response_body_with_empty_string) {
+  http_response_t response = {0};
+  const char *body_text = "";
+  
+  parse_result_e result = set_response_body(&response, body_text);
+  
+  cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
+  cr_assert_not_null(response.body, "Response body should not be NULL even for empty string");
+  cr_assert_str_eq(response.body, "", "Response body should be empty string");
+  cr_assert_eq(response.body_length, 0, "Body length should be 0 for empty string");
+  
+  free_http_response(&response);
+}
+
+Test(http, should_set_response_body_with_null_body) {
+  http_response_t response = {0};
+  
+  parse_result_e result = set_response_body(&response, NULL);
+  
+  cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
+  cr_assert_null(response.body, "Response body should be NULL");
+  cr_assert_eq(response.body_length, 0, "Body length should be 0 for NULL body");
+}
+
+Test(http, should_replace_existing_response_body) {
+  http_response_t response = {0};
+  const char *first_body = "First body";
+  const char *second_body = "Second body text";
+  
+  parse_result_e result1 = set_response_body(&response, first_body);
+  cr_assert_eq(result1, PARSE_OK, "First set should succeed");
+  cr_assert_str_eq(response.body, first_body, "Should have first body");
+  
+  parse_result_e result2 = set_response_body(&response, second_body);
+  cr_assert_eq(result2, PARSE_OK, "Second set should succeed");
+  cr_assert_str_eq(response.body, second_body, "Should have second body");
+  cr_assert_eq(response.body_length, strlen(second_body), "Body length should match second body");
+  
+  free_http_response(&response);
+}
+
+Test(http, should_reject_null_response_in_set_response_body) {
+  const char *body_text = "Test body";
+  
+  parse_result_e result = set_response_body(NULL, body_text);
+  
+  cr_assert_eq(result, PARSE_MEMORY_ERROR, "Expected PARSE_MEMORY_ERROR for NULL response");
+}
+
+Test(http, should_reject_oversized_response_body) {
+  http_response_t response = {0};
+  size_t oversized_length = HTTP_MAX_BODY_SIZE + 1;
+  char *large_body = malloc(oversized_length + 1);
+  memset(large_body, 'A', oversized_length);
+  large_body[oversized_length] = '\0';
+  
+  parse_result_e result = set_response_body(&response, large_body);
+  
+  cr_assert_eq(result, PARSE_BODY_TOO_LARGE, "Expected PARSE_BODY_TOO_LARGE for oversized body");
+  cr_assert_null(response.body, "Response body should remain NULL after failed set");
+  cr_assert_eq(response.body_length, 0, "Body length should remain 0 after failed set");
+  
+  free(large_body);
+}
+
+Test(http, should_clear_body_when_setting_null_after_existing_body) {
+  http_response_t response = {0};
+  const char *initial_body = "Initial body content";
+  
+  parse_result_e result1 = set_response_body(&response, initial_body);
+  cr_assert_eq(result1, PARSE_OK, "Initial set should succeed");
+  cr_assert_not_null(response.body, "Should have initial body");
+  
+  parse_result_e result2 = set_response_body(&response, NULL);
+  cr_assert_eq(result2, PARSE_OK, "Setting NULL should succeed");
+  cr_assert_null(response.body, "Body should be NULL after setting to NULL");
+  cr_assert_eq(response.body_length, 0, "Body length should be 0 after setting to NULL");
+}
+

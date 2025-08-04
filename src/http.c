@@ -372,6 +372,37 @@ void build_response_headers(http_response_t *response) {
   response->headers_count = header_count;
 }
 
+parse_result_e set_response_body(http_response_t *response, const char *body) {
+  if (!response) {
+    return PARSE_MEMORY_ERROR;
+  }
+  
+  if (response->body) {
+    free(response->body);
+    response->body = NULL;
+    response->body_length = 0;
+  }
+  
+  if (!body) {
+    return PARSE_OK;
+  }
+  
+  size_t body_len = strlen(body);
+  if (body_len > HTTP_MAX_BODY_SIZE) {
+    return PARSE_BODY_TOO_LARGE;
+  }
+  
+  response->body = malloc(body_len + 1);
+  if (!response->body) {
+    return PARSE_MEMORY_ERROR;
+  }
+  
+  strcpy(response->body, body);
+  response->body_length = body_len;
+  
+  return PARSE_OK;
+}
+
 void free_http_request(http_request_t *request) {
   free_http_headers(request);
   free_http_body(request);
