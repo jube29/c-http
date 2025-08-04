@@ -2,6 +2,7 @@
 #define HTTP_H
 
 #include <stddef.h>
+#include <stdint.h>
 #define HTTP_VERSION "HTTP/1.0"
 #define HTTP_REQUEST_LINE_LEN 4096
 #define HTTP_METHOD_LEN 8
@@ -12,6 +13,7 @@
 #define HTTP_MAX_HEADERS 10
 #define HTTP_MAX_HEADERS_SIZE 8192
 #define HTTP_MAX_BODY_SIZE 1048576
+#define HTTP_RESPONSE_REASON_LEN 64
 
 typedef enum {
   PARSE_OK = 0,
@@ -33,7 +35,7 @@ typedef enum {
 } parse_result_e;
 
 typedef struct {
-  int code;
+  uint16_t code;
   const char *phrase;
 } status_code_pair_t;
 
@@ -52,6 +54,16 @@ typedef struct {
   size_t body_length;
 } http_request_t;
 
+typedef struct {
+  char protocol[HTTP_PROTOCOL_LEN];
+  uint16_t status_code;
+  char reason_phrase[HTTP_RESPONSE_REASON_LEN];
+  http_header_t *headers;
+  size_t headers_count;
+  char *body;
+  size_t body_length;
+} http_response_t;
+
 parse_result_e parse_http_method(const char *method);
 parse_result_e parse_http_path(const char *path);
 parse_result_e parse_http_protocol(const char *protocol);
@@ -60,12 +72,14 @@ parse_result_e parse_http_request(const char *data, http_request_t *request);
 parse_result_e parse_http_headers(const char *headers, http_request_t *request);
 parse_result_e parse_http_body(const char *data, size_t data_length, http_request_t *request);
 const char *get_header_value(const http_request_t *request, const char *key);
-int parse_result_to_status_code(parse_result_e result);
-const char *status_code_to_reason_phrase(int status_code);
+uint16_t parse_result_to_status_code(parse_result_e result);
+const char *status_code_to_reason_phrase(uint16_t status_code);
+void build_status_line(parse_result_e result, http_response_t *response);
 extern const status_code_pair_t status_codes[];
 void free_http_headers(http_request_t *request);
 void free_http_body(http_request_t *request);
 void free_http_request(http_request_t *request);
+void free_http_response(http_response_t *response);
 
 #endif
 

@@ -16,7 +16,7 @@ const status_code_pair_t status_codes[] = {{200, "OK"},
                                            {505, "HTTP Version Not Supported"},
                                            {0, NULL}};
 
-const char *status_code_to_reason_phrase(int status_code) {
+const char *status_code_to_reason_phrase(uint16_t status_code) {
   for (int i = 0; status_codes[i].phrase != NULL; i++) {
     if (status_codes[i].code == status_code) {
       return status_codes[i].phrase;
@@ -307,7 +307,7 @@ void free_http_body(http_request_t *request) {
   }
 }
 
-int parse_result_to_status_code(parse_result_e result) {
+uint16_t parse_result_to_status_code(parse_result_e result) {
   switch (result) {
   case PARSE_OK:
     return 200;
@@ -338,8 +338,30 @@ int parse_result_to_status_code(parse_result_e result) {
   }
 }
 
+void build_status_line(parse_result_e result, http_response_t *response) {
+  uint16_t status_code = parse_result_to_status_code(result);
+  const char *reason_phrase = status_code_to_reason_phrase(status_code);
+  
+  strcpy(response->protocol, HTTP_VERSION);
+  response->status_code = status_code;
+  strcpy(response->reason_phrase, reason_phrase);
+}
+
 void free_http_request(http_request_t *request) {
   free_http_headers(request);
   free_http_body(request);
+}
+
+void free_http_response(http_response_t *response) {
+  if (response->headers) {
+    free(response->headers);
+    response->headers = NULL;
+    response->headers_count = 0;
+  }
+  if (response->body) {
+    free(response->body);
+    response->body = NULL;
+    response->body_length = 0;
+  }
 }
 

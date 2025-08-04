@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 Test(http, should_parse_get) { cr_assert(parse_http_method("GET") == PARSE_OK, "GET method should be parsed"); }
 
 Test(http, should_parse_post) { cr_assert(parse_http_method("POST") == PARSE_OK, "POST method should be parsed"); }
@@ -21,11 +20,9 @@ Test(http, should_not_parse_patch) {
   cr_assert(parse_http_method("PATCH") == PARSE_INVALID_METHOD, "PATCH method should not be parsed");
 }
 
-
 Test(http, should_parse_protocol_http_1_0) {
   cr_assert(parse_http_protocol("HTTP/1.0") == PARSE_OK, "HTTP/1.0 protocol should be parsed");
 }
-
 
 Test(http, should_parse_valid_basic_path) {
   cr_assert(parse_http_path("/foo.html") == PARSE_OK, "Valid path should be parsed");
@@ -50,7 +47,6 @@ Test(http, should_not_parse_too_long_path) {
 Test(http, should_not_parse_path_with_space_in) {
   cr_assert(parse_http_path("bar html") == PARSE_INVALID_PATH, "Path with space in should not be parsed");
 }
-
 
 Test(http, should_parse_valid_request_line) {
   http_request_t request = {0};
@@ -119,7 +115,6 @@ Test(http, should_parse_request_line_with_complex_valid_path) {
             "Request line with complex path should be parsed");
   cr_assert_str_eq(request.path, "/path/to/resource.html", "Path should be /path/to/resource.html");
 }
-
 
 Test(http, should_parse_single_header) {
   http_request_t request = {0};
@@ -292,7 +287,6 @@ Test(http, should_handle_common_http_headers) {
   free_http_headers(&request);
 }
 
-
 Test(http, should_properly_initialize_headers_to_null) {
   http_request_t request = {0};
   cr_assert_null(request.headers, "Headers should be initialized to NULL");
@@ -336,7 +330,6 @@ Test(http, should_handle_multiple_free_calls_safely) {
   free_http_headers(&request);
   cr_assert_null(request.headers, "Headers should remain NULL after second free");
 }
-
 
 Test(http, should_parse_complete_http_request_with_headers) {
   http_request_t request = {0};
@@ -414,7 +407,6 @@ Test(http, should_parse_complete_http_request_without_headers) {
 
   free_http_headers(&request);
 }
-
 
 Test(http, should_parse_post_request_with_simple_body) {
   http_request_t request = {0};
@@ -518,7 +510,6 @@ Test(http, should_get_header_value_by_key) {
 
   free_http_headers(&request);
 }
-
 
 Test(http, should_reject_body_larger_than_max_size) {
   http_request_t request = {0};
@@ -700,7 +691,6 @@ Test(http, should_handle_whitespace_only_body) {
   free_http_request(&request);
 }
 
-
 Test(http, should_accept_text_plain_content_type) {
   http_request_t request = {0};
   const char *http_data = "POST /api HTTP/1.0\r\n"
@@ -724,7 +714,7 @@ Test(http, should_reject_application_json_content_type) {
                           "{\"key\":\"val\"}";
 
   parse_result_e result = parse_http_request(http_data, &request);
-  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE, 
+  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE,
                "Expected PARSE_UNSUPPORTED_CONTENT_TYPE for application/json, got error code %d", result);
 
   free_http_request(&request);
@@ -739,7 +729,7 @@ Test(http, should_reject_text_html_content_type) {
                           "<html></html>";
 
   parse_result_e result = parse_http_request(http_data, &request);
-  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE, 
+  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE,
                "Expected PARSE_UNSUPPORTED_CONTENT_TYPE for text/html, got error code %d", result);
 
   free_http_request(&request);
@@ -753,8 +743,9 @@ Test(http, should_reject_post_request_without_content_type_header) {
                           "hello";
 
   parse_result_e result = parse_http_request(http_data, &request);
-  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE, 
-               "Expected PARSE_UNSUPPORTED_CONTENT_TYPE for POST without Content-Type header, got error code %d", result);
+  cr_assert_eq(result, PARSE_UNSUPPORTED_CONTENT_TYPE,
+               "Expected PARSE_UNSUPPORTED_CONTENT_TYPE for POST without Content-Type header, got error code %d",
+               result);
 
   free_http_request(&request);
 }
@@ -768,5 +759,94 @@ Test(http, should_accept_get_request_without_content_type_header) {
   cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK for GET without Content-Type header, got error code %d", result);
 
   free_http_request(&request);
+}
+
+Test(http, should_build_status_line_for_parse_ok) {
+  http_response_t response = {0};
+  build_status_line(PARSE_OK, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 200, "Expected status code 200, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "OK", "Expected reason phrase 'OK', got '%s'", response.reason_phrase);
+}
+
+Test(http, should_build_status_line_for_parse_invalid_method) {
+  http_response_t response = {0};
+  build_status_line(PARSE_INVALID_METHOD, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 405, "Expected status code 405, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "Method Not Allowed",
+                   "Expected reason phrase 'Method Not Allowed', got '%s'", response.reason_phrase);
+}
+
+Test(http, should_build_status_line_for_parse_invalid_path) {
+  http_response_t response = {0};
+  build_status_line(PARSE_INVALID_PATH, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 400, "Expected status code 400, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "Bad Request", "Expected reason phrase 'Bad Request', got '%s'",
+                   response.reason_phrase);
+}
+
+Test(http, should_build_status_line_for_parse_invalid_protocol) {
+  http_response_t response = {0};
+  build_status_line(PARSE_INVALID_PROTOCOL, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 505, "Expected status code 505, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "HTTP Version Not Supported",
+                   "Expected reason phrase 'HTTP Version Not Supported', got '%s'", response.reason_phrase);
+}
+
+Test(http, should_build_status_line_for_parse_malformed_request_line) {
+  http_response_t response = {0};
+  build_status_line(PARSE_MALFORMED_REQUEST_LINE, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 400, "Expected status code 400, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "Bad Request", "Expected reason phrase 'Bad Request', got '%s'",
+                   response.reason_phrase);
+}
+
+Test(http, should_build_status_line_for_parse_too_many_headers) {
+  http_response_t response = {0};
+  build_status_line(PARSE_TOO_MANY_HEADERS, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 413, "Expected status code 413, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "Payload Too Large", "Expected reason phrase 'Payload Too Large', got '%s'",
+                   response.reason_phrase);
+}
+
+Test(http, should_build_status_line_for_parse_body_too_large) {
+  http_response_t response = {0};
+  build_status_line(PARSE_BODY_TOO_LARGE, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 413, "Expected status code 413, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "Payload Too Large", "Expected reason phrase 'Payload Too Large', got '%s'",
+                   response.reason_phrase);
+}
+
+Test(http, should_build_status_line_for_parse_unsupported_content_type) {
+  http_response_t response = {0};
+  build_status_line(PARSE_UNSUPPORTED_CONTENT_TYPE, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 415, "Expected status code 415, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "Unsupported Media Type",
+                   "Expected reason phrase 'Unsupported Media Type', got '%s'", response.reason_phrase);
+}
+
+Test(http, should_build_status_line_for_parse_memory_error) {
+  http_response_t response = {0};
+  build_status_line(PARSE_MEMORY_ERROR, &response);
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", response.protocol);
+  cr_assert_eq(response.status_code, 500, "Expected status code 500, got %u", response.status_code);
+  cr_assert_str_eq(response.reason_phrase, "Internal Server Error",
+                   "Expected reason phrase 'Internal Server Error', got '%s'", response.reason_phrase);
 }
 
