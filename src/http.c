@@ -24,7 +24,7 @@ parse_result_e parse_http_path(const char *path) {
 }
 
 parse_result_e parse_http_protocol(const char *protocol) {
-  if (strcmp(protocol, "HTTP/1.1") != 0) {
+  if (strcmp(protocol, HTTP_VERSION) != 0) {
     return PARSE_INVALID_PROTOCOL;
   }
   return PARSE_OK;

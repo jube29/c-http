@@ -2,6 +2,7 @@
 #define HTTP_H
 
 #include <stddef.h>
+#define HTTP_VERSION "HTTP/1.0"
 #define HTTP_REQUEST_LINE_LEN 4096
 #define HTTP_METHOD_LEN 8
 #define HTTP_PATH_LEN 2048
