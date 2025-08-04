@@ -22,8 +22,8 @@ Test(http, should_not_parse_patch) {
 }
 
 
-Test(http, should_parse_protocol_http_1_1) {
-  cr_assert(parse_http_protocol("HTTP/1.1") == PARSE_OK, "HTTP/1.1 protocol should be parsed");
+Test(http, should_parse_protocol_http_1_0) {
+  cr_assert(parse_http_protocol("HTTP/1.0") == PARSE_OK, "HTTP/1.0 protocol should be parsed");
 }
 
 
@@ -54,11 +54,11 @@ Test(http, should_not_parse_path_with_space_in) {
 
 Test(http, should_parse_valid_request_line) {
   http_request_t request = {0};
-  cr_assert(parse_http_request_line("GET /index.html HTTP/1.1", &request) == PARSE_OK,
+  cr_assert(parse_http_request_line("GET /index.html HTTP/1.0", &request) == PARSE_OK,
             "Valid request line should be parsed");
   cr_assert_str_eq(request.method, "GET", "Method should be GET");
   cr_assert_str_eq(request.path, "/index.html", "Path should be /index.html");
-  cr_assert_str_eq(request.protocol, "HTTP/1.1", "Protocol should be HTTP/1.1");
+  cr_assert_str_eq(request.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
 }
 
 Test(http, should_not_parse_malformed_request_line_missing_parts) {
@@ -73,25 +73,25 @@ Test(http, should_not_parse_malformed_request_line_missing_parts) {
 
 Test(http, should_not_parse_request_line_with_invalid_path) {
   http_request_t request = {0};
-  cr_assert(parse_http_request_line("GET index.html HTTP/1.1", &request) == PARSE_INVALID_PATH,
+  cr_assert(parse_http_request_line("GET index.html HTTP/1.0", &request) == PARSE_INVALID_PATH,
             "Request line with path missing leading slash should not be parsed");
-  cr_assert(parse_http_request_line("GET \"\" HTTP/1.1", &request) == PARSE_INVALID_PATH,
+  cr_assert(parse_http_request_line("GET \"\" HTTP/1.0", &request) == PARSE_INVALID_PATH,
             "Request line with empty path should not be parsed");
 }
 
 Test(http, should_not_parse_request_line_with_invalid_protocol) {
   http_request_t request = {0};
-  cr_assert(parse_http_request_line("GET /index.html HTTP/1.0", &request) == PARSE_INVALID_PROTOCOL,
-            "Request line with invalid protocol should not be parsed");
+  cr_assert(parse_http_request_line("GET /index.html HTTP/1.1", &request) == PARSE_INVALID_PROTOCOL,
+            "Request line with HTTP/1.1 protocol should not be parsed");
   cr_assert(parse_http_request_line("GET /index.html HTTP/2.0", &request) == PARSE_INVALID_PROTOCOL,
             "Request line with invalid protocol should not be parsed");
-  cr_assert(parse_http_request_line("GET /index.html HTTPS/1.1", &request) == PARSE_INVALID_PROTOCOL,
+  cr_assert(parse_http_request_line("GET /index.html HTTPS/1.0", &request) == PARSE_INVALID_PROTOCOL,
             "Request line with invalid protocol should not be parsed");
 }
 
 Test(http, should_not_parse_http_request_without_crlf) {
   http_request_t request = {0};
-  const char *http_data = "GET /test.html HTTP/1.1";
+  const char *http_data = "GET /test.html HTTP/1.0";
   cr_assert(parse_http_request(http_data, &request) == PARSE_UNTERMINATED_REQUEST_LINE,
             "HTTP request without CRLF should not be parsed");
 }
@@ -101,21 +101,21 @@ Test(http, should_not_parse_http_request_with_too_long_request_line) {
   char long_line[4110];
   strcpy(long_line, "GET /");
   memset(long_line + 5, 'a', 4090);
-  strcat(long_line, " HTTP/1.1\r\n");
+  strcat(long_line, " HTTP/1.0\r\n");
   cr_assert(parse_http_request(long_line, &request) == PARSE_MALFORMED_REQUEST_LINE,
             "HTTP request with too long request line should not be parsed");
 }
 
 Test(http, should_parse_request_line_with_minimal_valid_path) {
   http_request_t request = {0};
-  cr_assert(parse_http_request_line("GET / HTTP/1.1", &request) == PARSE_OK,
+  cr_assert(parse_http_request_line("GET / HTTP/1.0", &request) == PARSE_OK,
             "Request line with root path should be parsed");
   cr_assert_str_eq(request.path, "/", "Path should be /");
 }
 
 Test(http, should_parse_request_line_with_complex_valid_path) {
   http_request_t request = {0};
-  cr_assert(parse_http_request_line("GET /path/to/resource.html HTTP/1.1", &request) == PARSE_OK,
+  cr_assert(parse_http_request_line("GET /path/to/resource.html HTTP/1.0", &request) == PARSE_OK,
             "Request line with complex path should be parsed");
   cr_assert_str_eq(request.path, "/path/to/resource.html", "Path should be /path/to/resource.html");
 }
@@ -340,7 +340,7 @@ Test(http, should_handle_multiple_free_calls_safely) {
 
 Test(http, should_parse_complete_http_request_with_headers) {
   http_request_t request = {0};
-  const char *http_data = "GET /api/users HTTP/1.1\r\n"
+  const char *http_data = "GET /api/users HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "User-Agent: TestClient/1.0\r\n"
                           "Accept: text/plain\r\n"
@@ -352,7 +352,7 @@ Test(http, should_parse_complete_http_request_with_headers) {
 
   cr_assert_str_eq(request.method, "GET", "Expected method 'GET', got '%s'", request.method);
   cr_assert_str_eq(request.path, "/api/users", "Expected path '/api/users', got '%s'", request.path);
-  cr_assert_str_eq(request.protocol, "HTTP/1.1", "Expected protocol 'HTTP/1.1', got '%s'", request.protocol);
+  cr_assert_str_eq(request.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", request.protocol);
 
   cr_assert_eq(request.headers_count, 4, "Expected 4 headers, got %d", (int)request.headers_count);
 
@@ -380,7 +380,7 @@ Test(http, should_parse_complete_http_request_with_headers) {
 
 Test(http, should_parse_minimal_complete_http_request) {
   http_request_t request = {0};
-  const char *http_data = "GET / HTTP/1.1\r\n"
+  const char *http_data = "GET / HTTP/1.0\r\n"
                           "Host: localhost\r\n\r\n";
 
   parse_result_e result = parse_http_request(http_data, &request);
@@ -388,7 +388,7 @@ Test(http, should_parse_minimal_complete_http_request) {
   cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
   cr_assert_str_eq(request.method, "GET", "Expected method 'GET', got '%s'", request.method);
   cr_assert_str_eq(request.path, "/", "Expected path '/', got '%s'", request.path);
-  cr_assert_str_eq(request.protocol, "HTTP/1.1", "Expected protocol 'HTTP/1.1', got '%s'", request.protocol);
+  cr_assert_str_eq(request.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", request.protocol);
   cr_assert_eq(request.headers_count, 1, "Expected 1 header, got %d", (int)request.headers_count);
   cr_assert_str_eq(request.headers[0].key, "Host", "Expected header key 'Host', got '%s'", request.headers[0].key);
   cr_assert_str_eq(request.headers[0].value, "localhost", "Expected header value 'localhost', got '%s'",
@@ -399,7 +399,7 @@ Test(http, should_parse_minimal_complete_http_request) {
 
 Test(http, should_parse_complete_http_request_without_headers) {
   http_request_t request = {0};
-  const char *http_data = "GET /index.html HTTP/1.1\r\n\r\n";
+  const char *http_data = "GET /index.html HTTP/1.0\r\n\r\n";
 
   parse_result_e result = parse_http_request(http_data, &request);
 
@@ -407,7 +407,7 @@ Test(http, should_parse_complete_http_request_without_headers) {
 
   cr_assert_str_eq(request.method, "GET", "Expected method 'GET', got '%s'", request.method);
   cr_assert_str_eq(request.path, "/index.html", "Expected path '/index.html', got '%s'", request.path);
-  cr_assert_str_eq(request.protocol, "HTTP/1.1", "Expected protocol 'HTTP/1.1', got '%s'", request.protocol);
+  cr_assert_str_eq(request.protocol, "HTTP/1.0", "Expected protocol 'HTTP/1.0', got '%s'", request.protocol);
 
   cr_assert_eq(request.headers_count, 0, "Expected 0 headers, got %d", (int)request.headers_count);
   cr_assert_null(request.headers, "Expected headers to be NULL, got %p", request.headers);
@@ -418,7 +418,7 @@ Test(http, should_parse_complete_http_request_without_headers) {
 
 Test(http, should_parse_post_request_with_simple_body) {
   http_request_t request = {0};
-  const char *http_data = "POST /api/users HTTP/1.1\r\n"
+  const char *http_data = "POST /api/users HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 16\r\n\r\n"
@@ -443,7 +443,7 @@ Test(http, should_parse_post_request_with_simple_body) {
 
 Test(http, should_parse_request_with_empty_body) {
   http_request_t request = {0};
-  const char *http_data = "POST /api/data HTTP/1.1\r\n"
+  const char *http_data = "POST /api/data HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 0\r\n\r\n";
@@ -464,7 +464,7 @@ Test(http, should_parse_request_with_empty_body) {
 
 Test(http, should_parse_request_with_text_body) {
   http_request_t request = {0};
-  const char *http_data = "POST /api/note HTTP/1.1\r\n"
+  const char *http_data = "POST /api/note HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 12\r\n\r\n"
@@ -526,7 +526,7 @@ Test(http, should_reject_body_larger_than_max_size) {
   char large_content_length[20];
   snprintf(large_content_length, sizeof(large_content_length), "%zu", oversized_length);
 
-  const char *http_data_prefix = "POST /api HTTP/1.1\r\n"
+  const char *http_data_prefix = "POST /api HTTP/1.0\r\n"
                                  "Host: example.com\r\n"
                                  "Content-Type: text/plain\r\n"
                                  "Content-Length: ";
@@ -551,7 +551,7 @@ Test(http, should_reject_body_larger_than_max_size) {
 
 Test(http, should_reject_invalid_content_length_header) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: invalid\r\n\r\n"
@@ -566,7 +566,7 @@ Test(http, should_reject_invalid_content_length_header) {
 
 Test(http, should_reject_negative_content_length) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: -5\r\n\r\n"
@@ -581,7 +581,7 @@ Test(http, should_reject_negative_content_length) {
 
 Test(http, should_reject_content_length_mismatch) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 50\r\n\r\n"
@@ -596,7 +596,7 @@ Test(http, should_reject_content_length_mismatch) {
 
 Test(http, should_handle_incomplete_body_data) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 20\r\n\r\n"
@@ -611,7 +611,7 @@ Test(http, should_handle_incomplete_body_data) {
 
 Test(http, should_reject_multiple_content_length_headers) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 10\r\n"
@@ -626,7 +626,7 @@ Test(http, should_reject_multiple_content_length_headers) {
 
 Test(http, should_handle_body_with_null_bytes) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 11\r\n\r\n";
@@ -653,7 +653,7 @@ Test(http, should_handle_body_with_null_bytes) {
 
 Test(http, should_handle_zero_content_length_with_no_body) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 0\r\n\r\n";
@@ -678,7 +678,7 @@ Test(http, should_handle_whitespace_only_body) {
   snprintf(content_length_str, sizeof(content_length_str), "%zu", strlen(whitespace_body));
 
   char *http_data = malloc(200 + strlen(whitespace_body));
-  strcpy(http_data, "POST /api HTTP/1.1\r\n"
+  strcpy(http_data, "POST /api HTTP/1.0\r\n"
                     "Host: example.com\r\n"
                     "Content-Type: text/plain\r\n"
                     "Content-Length: ");
@@ -703,7 +703,7 @@ Test(http, should_handle_whitespace_only_body) {
 
 Test(http, should_accept_text_plain_content_type) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/plain\r\n"
                           "Content-Length: 5\r\n\r\n"
@@ -717,7 +717,7 @@ Test(http, should_accept_text_plain_content_type) {
 
 Test(http, should_reject_application_json_content_type) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: application/json\r\n"
                           "Content-Length: 13\r\n\r\n"
@@ -732,7 +732,7 @@ Test(http, should_reject_application_json_content_type) {
 
 Test(http, should_reject_text_html_content_type) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Type: text/html\r\n"
                           "Content-Length: 13\r\n\r\n"
@@ -747,7 +747,7 @@ Test(http, should_reject_text_html_content_type) {
 
 Test(http, should_reject_post_request_without_content_type_header) {
   http_request_t request = {0};
-  const char *http_data = "POST /api HTTP/1.1\r\n"
+  const char *http_data = "POST /api HTTP/1.0\r\n"
                           "Host: example.com\r\n"
                           "Content-Length: 5\r\n\r\n"
                           "hello";
@@ -761,7 +761,7 @@ Test(http, should_reject_post_request_without_content_type_header) {
 
 Test(http, should_accept_get_request_without_content_type_header) {
   http_request_t request = {0};
-  const char *http_data = "GET /api HTTP/1.1\r\n"
+  const char *http_data = "GET /api HTTP/1.0\r\n"
                           "Host: example.com\r\n\r\n";
 
   parse_result_e result = parse_http_request(http_data, &request);
