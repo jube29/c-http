@@ -341,7 +341,7 @@ uint16_t parse_result_to_status_code(parse_result_e result) {
 void build_status_line(parse_result_e result, http_response_t *response) {
   uint16_t status_code = parse_result_to_status_code(result);
   const char *reason_phrase = status_code_to_reason_phrase(status_code);
-  
+
   strcpy(response->protocol, HTTP_VERSION);
   response->status_code = status_code;
   strcpy(response->reason_phrase, reason_phrase);
@@ -376,30 +376,47 @@ parse_result_e set_response_body(http_response_t *response, const char *body) {
   if (!response) {
     return PARSE_MEMORY_ERROR;
   }
-  
+
   if (response->body) {
     free(response->body);
     response->body = NULL;
     response->body_length = 0;
   }
-  
+
   if (!body) {
     return PARSE_OK;
   }
-  
+
   size_t body_len = strlen(body);
   if (body_len > HTTP_MAX_BODY_SIZE) {
     return PARSE_BODY_TOO_LARGE;
   }
-  
+
   response->body = malloc(body_len + 1);
   if (!response->body) {
     return PARSE_MEMORY_ERROR;
   }
-  
+
   strcpy(response->body, body);
   response->body_length = body_len;
-  
+
+  return PARSE_OK;
+}
+
+parse_result_e build_response(parse_result_e result, const char *body, http_response_t *response) {
+  if (!response) {
+    return PARSE_MEMORY_ERROR;
+  }
+
+  build_status_line(result, response);
+
+  parse_result_e body_result = set_response_body(response, body);
+  if (body_result != PARSE_OK) {
+    return body_result;
+  }
+
+  build_response_headers(response);
+
   return PARSE_OK;
 }
 

@@ -859,15 +859,21 @@ Test(http, should_build_response_headers_without_body) {
 
   cr_assert_eq(response.headers_count, 3, "Expected 3 headers, got %zu", response.headers_count);
   cr_assert_not_null(response.headers, "Headers should not be NULL");
-  
-  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'", response.headers[0].key);
-  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'", response.headers[0].value);
 
-  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'", response.headers[1].key);
-  cr_assert_str_eq(response.headers[1].value, "0", "Expected Content-Length header value '0', got '%s'", response.headers[1].value);
+  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'",
+                   response.headers[0].key);
+  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'",
+                   response.headers[0].value);
 
-  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'", response.headers[2].key);
-  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'", response.headers[2].value);
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'",
+                   response.headers[1].key);
+  cr_assert_str_eq(response.headers[1].value, "0", "Expected Content-Length header value '0', got '%s'",
+                   response.headers[1].value);
+
+  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'",
+                   response.headers[2].key);
+  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'",
+                   response.headers[2].value);
 
   free_http_response(&response);
 }
@@ -884,14 +890,20 @@ Test(http, should_build_response_headers_with_body) {
   cr_assert_eq(response.headers_count, 3, "Expected 3 headers, got %zu", response.headers_count);
   cr_assert_not_null(response.headers, "Headers should not be NULL");
 
-  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'", response.headers[0].key);
-  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'", response.headers[0].value);
+  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'",
+                   response.headers[0].key);
+  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'",
+                   response.headers[0].value);
 
-  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'", response.headers[1].key);
-  cr_assert_str_eq(response.headers[1].value, "12", "Expected Content-Length header value '12', got '%s'", response.headers[1].value);
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'",
+                   response.headers[1].key);
+  cr_assert_str_eq(response.headers[1].value, "12", "Expected Content-Length header value '12', got '%s'",
+                   response.headers[1].value);
 
-  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'", response.headers[2].key);
-  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'", response.headers[2].value);
+  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'",
+                   response.headers[2].key);
+  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'",
+                   response.headers[2].value);
 
   free_http_response(&response);
 }
@@ -906,22 +918,26 @@ Test(http, should_build_response_headers_with_empty_body) {
 
   cr_assert_eq(response.headers_count, 3, "Expected 3 headers for empty body, got %zu", response.headers_count);
   cr_assert_not_null(response.headers, "Headers should not be NULL");
-  
-  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'", response.headers[0].key);
-  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'", response.headers[0].value);
 
-  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'", response.headers[1].key);
-  cr_assert_str_eq(response.headers[1].value, "0", "Expected Content-Length header value '0', got '%s'", response.headers[1].value);
+  cr_assert_str_eq(response.headers[0].key, "Connection", "Expected Connection header key, got '%s'",
+                   response.headers[0].key);
+  cr_assert_str_eq(response.headers[0].value, "close", "Expected Connection header value 'close', got '%s'",
+                   response.headers[0].value);
 
-  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'", response.headers[2].key);
-  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'", response.headers[2].value);
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'",
+                   response.headers[1].key);
+  cr_assert_str_eq(response.headers[1].value, "0", "Expected Content-Length header value '0', got '%s'",
+                   response.headers[1].value);
+
+  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Expected Content-Type header key, got '%s'",
+                   response.headers[2].key);
+  cr_assert_str_eq(response.headers[2].value, "text/plain", "Expected Content-Type header value 'text/plain', got '%s'",
+                   response.headers[2].value);
 
   free_http_response(&response);
 }
 
-Test(http, should_handle_null_response_in_build_response_headers) {
-  build_response_headers(NULL);
-}
+Test(http, should_handle_null_response_in_build_response_headers) { build_response_headers(NULL); }
 
 Test(http, should_build_response_headers_with_large_body) {
   http_response_t response = {0};
@@ -934,9 +950,11 @@ Test(http, should_build_response_headers_with_large_body) {
   build_response_headers(&response);
 
   cr_assert_eq(response.headers_count, 3, "Expected 3 headers, got %zu", response.headers_count);
-  
-  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'", response.headers[1].key);
-  cr_assert_str_eq(response.headers[1].value, "1000", "Expected Content-Length header value '1000', got '%s'", response.headers[1].value);
+
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Expected Content-Length header key, got '%s'",
+                   response.headers[1].key);
+  cr_assert_str_eq(response.headers[1].value, "1000", "Expected Content-Length header value '1000', got '%s'",
+                   response.headers[1].value);
 
   free_http_response(&response);
 }
@@ -944,36 +962,36 @@ Test(http, should_build_response_headers_with_large_body) {
 Test(http, should_set_response_body_with_valid_string) {
   http_response_t response = {0};
   const char *body_text = "Hello, World!";
-  
+
   parse_result_e result = set_response_body(&response, body_text);
-  
+
   cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
   cr_assert_not_null(response.body, "Response body should not be NULL");
   cr_assert_str_eq(response.body, body_text, "Response body should match input");
   cr_assert_eq(response.body_length, strlen(body_text), "Body length should match string length");
-  
+
   free_http_response(&response);
 }
 
 Test(http, should_set_response_body_with_empty_string) {
   http_response_t response = {0};
   const char *body_text = "";
-  
+
   parse_result_e result = set_response_body(&response, body_text);
-  
+
   cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
   cr_assert_not_null(response.body, "Response body should not be NULL even for empty string");
   cr_assert_str_eq(response.body, "", "Response body should be empty string");
   cr_assert_eq(response.body_length, 0, "Body length should be 0 for empty string");
-  
+
   free_http_response(&response);
 }
 
 Test(http, should_set_response_body_with_null_body) {
   http_response_t response = {0};
-  
+
   parse_result_e result = set_response_body(&response, NULL);
-  
+
   cr_assert_eq(result, PARSE_OK, "Expected PARSE_OK, got error code %d", result);
   cr_assert_null(response.body, "Response body should be NULL");
   cr_assert_eq(response.body_length, 0, "Body length should be 0 for NULL body");
@@ -983,24 +1001,24 @@ Test(http, should_replace_existing_response_body) {
   http_response_t response = {0};
   const char *first_body = "First body";
   const char *second_body = "Second body text";
-  
+
   parse_result_e result1 = set_response_body(&response, first_body);
   cr_assert_eq(result1, PARSE_OK, "First set should succeed");
   cr_assert_str_eq(response.body, first_body, "Should have first body");
-  
+
   parse_result_e result2 = set_response_body(&response, second_body);
   cr_assert_eq(result2, PARSE_OK, "Second set should succeed");
   cr_assert_str_eq(response.body, second_body, "Should have second body");
   cr_assert_eq(response.body_length, strlen(second_body), "Body length should match second body");
-  
+
   free_http_response(&response);
 }
 
 Test(http, should_reject_null_response_in_set_response_body) {
   const char *body_text = "Test body";
-  
+
   parse_result_e result = set_response_body(NULL, body_text);
-  
+
   cr_assert_eq(result, PARSE_MEMORY_ERROR, "Expected PARSE_MEMORY_ERROR for NULL response");
 }
 
@@ -1010,27 +1028,318 @@ Test(http, should_reject_oversized_response_body) {
   char *large_body = malloc(oversized_length + 1);
   memset(large_body, 'A', oversized_length);
   large_body[oversized_length] = '\0';
-  
+
   parse_result_e result = set_response_body(&response, large_body);
-  
+
   cr_assert_eq(result, PARSE_BODY_TOO_LARGE, "Expected PARSE_BODY_TOO_LARGE for oversized body");
   cr_assert_null(response.body, "Response body should remain NULL after failed set");
   cr_assert_eq(response.body_length, 0, "Body length should remain 0 after failed set");
-  
+
   free(large_body);
 }
 
 Test(http, should_clear_body_when_setting_null_after_existing_body) {
   http_response_t response = {0};
   const char *initial_body = "Initial body content";
-  
+
   parse_result_e result1 = set_response_body(&response, initial_body);
   cr_assert_eq(result1, PARSE_OK, "Initial set should succeed");
   cr_assert_not_null(response.body, "Should have initial body");
-  
+
   parse_result_e result2 = set_response_body(&response, NULL);
   cr_assert_eq(result2, PARSE_OK, "Setting NULL should succeed");
   cr_assert_null(response.body, "Body should be NULL after setting to NULL");
   cr_assert_eq(response.body_length, 0, "Body length should be 0 after setting to NULL");
+}
+
+Test(http, should_build_complete_response_for_parse_ok) {
+  http_response_t response = {0};
+  const char *body_content = "Request processed successfully";
+
+  parse_result_e result = build_response(PARSE_OK, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 200, "Status code should be 200");
+  cr_assert_str_eq(response.reason_phrase, "OK", "Reason phrase should be OK");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, body_content, "Response body should match input");
+  cr_assert_eq(response.body_length, strlen(body_content), "Body length should match");
+
+  cr_assert_eq(response.headers_count, 3, "Should have 3 headers");
+  cr_assert_str_eq(response.headers[0].key, "Connection", "First header should be Connection");
+  cr_assert_str_eq(response.headers[0].value, "close", "Connection should be close");
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Second header should be Content-Length");
+  cr_assert_str_eq(response.headers[1].value, "30", "Content-Length should match body length");
+  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Third header should be Content-Type");
+  cr_assert_str_eq(response.headers[2].value, "text/plain", "Content-Type should be text/plain");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_for_parse_invalid_method) {
+  http_response_t response = {0};
+  const char *body_content = "Method not allowed";
+
+  parse_result_e result = build_response(PARSE_INVALID_METHOD, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 405, "Status code should be 405");
+  cr_assert_str_eq(response.reason_phrase, "Method Not Allowed", "Reason phrase should be Method Not Allowed");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, body_content, "Response body should match input");
+  cr_assert_eq(response.body_length, strlen(body_content), "Body length should match");
+
+  cr_assert_eq(response.headers_count, 3, "Should have 3 headers");
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Second header should be Content-Length");
+  cr_assert_str_eq(response.headers[1].value, "18", "Content-Length should match body length");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_for_parse_invalid_path) {
+  http_response_t response = {0};
+  const char *body_content = "Bad request - invalid path";
+
+  parse_result_e result = build_response(PARSE_INVALID_PATH, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 400, "Status code should be 400");
+  cr_assert_str_eq(response.reason_phrase, "Bad Request", "Reason phrase should be Bad Request");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, body_content, "Response body should match input");
+  cr_assert_eq(response.body_length, strlen(body_content), "Body length should match");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_for_parse_invalid_protocol) {
+  http_response_t response = {0};
+  const char *body_content = "HTTP version not supported";
+
+  parse_result_e result = build_response(PARSE_INVALID_PROTOCOL, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 505, "Status code should be 505");
+  cr_assert_str_eq(response.reason_phrase, "HTTP Version Not Supported", "Reason phrase should match");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, body_content, "Response body should match input");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_for_parse_body_too_large) {
+  http_response_t response = {0};
+  const char *body_content = "Request entity too large";
+
+  parse_result_e result = build_response(PARSE_BODY_TOO_LARGE, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 413, "Status code should be 413");
+  cr_assert_str_eq(response.reason_phrase, "Payload Too Large", "Reason phrase should be Payload Too Large");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, body_content, "Response body should match input");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_for_parse_unsupported_content_type) {
+  http_response_t response = {0};
+  const char *body_content = "Unsupported media type";
+
+  parse_result_e result = build_response(PARSE_UNSUPPORTED_CONTENT_TYPE, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 415, "Status code should be 415");
+  cr_assert_str_eq(response.reason_phrase, "Unsupported Media Type", "Reason phrase should match");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, body_content, "Response body should match input");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_for_parse_memory_error) {
+  http_response_t response = {0};
+  const char *body_content = "Internal server error";
+
+  parse_result_e result = build_response(PARSE_MEMORY_ERROR, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 500, "Status code should be 500");
+  cr_assert_str_eq(response.reason_phrase, "Internal Server Error", "Reason phrase should match");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, body_content, "Response body should match input");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_with_empty_body) {
+  http_response_t response = {0};
+  const char *body_content = "";
+
+  parse_result_e result = build_response(PARSE_OK, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 200, "Status code should be 200");
+  cr_assert_str_eq(response.reason_phrase, "OK", "Reason phrase should be OK");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL even for empty string");
+  cr_assert_str_eq(response.body, "", "Response body should be empty string");
+  cr_assert_eq(response.body_length, 0, "Body length should be 0");
+
+  cr_assert_eq(response.headers_count, 3, "Should have 3 headers");
+  cr_assert_str_eq(response.headers[1].value, "0", "Content-Length should be 0");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_with_null_body) {
+  http_response_t response = {0};
+
+  parse_result_e result = build_response(PARSE_OK, NULL, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 200, "Status code should be 200");
+  cr_assert_str_eq(response.reason_phrase, "OK", "Reason phrase should be OK");
+
+  cr_assert_null(response.body, "Response body should be NULL");
+  cr_assert_eq(response.body_length, 0, "Body length should be 0");
+
+  cr_assert_eq(response.headers_count, 3, "Should have 3 headers");
+  cr_assert_str_eq(response.headers[1].value, "0", "Content-Length should be 0");
+
+  free_http_response(&response);
+}
+
+Test(http, should_build_complete_response_with_large_body) {
+  http_response_t response = {0};
+  size_t large_size = 1000;
+  char *large_body = malloc(large_size + 1);
+  memset(large_body, 'X', large_size);
+  large_body[large_size] = '\0';
+
+  parse_result_e result = build_response(PARSE_OK, large_body, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+
+  cr_assert_str_eq(response.protocol, "HTTP/1.0", "Protocol should be HTTP/1.0");
+  cr_assert_eq(response.status_code, 200, "Status code should be 200");
+
+  cr_assert_not_null(response.body, "Response body should not be NULL");
+  cr_assert_str_eq(response.body, large_body, "Response body should match input");
+  cr_assert_eq(response.body_length, large_size, "Body length should match");
+
+  cr_assert_eq(response.headers_count, 3, "Should have 3 headers");
+  cr_assert_str_eq(response.headers[1].value, "1000", "Content-Length should be 1000");
+
+  free(large_body);
+  free_http_response(&response);
+}
+
+Test(http, should_reject_build_response_with_null_response_struct) {
+  const char *body_content = "Test body";
+
+  parse_result_e result = build_response(PARSE_OK, body_content, NULL);
+
+  cr_assert_eq(result, PARSE_MEMORY_ERROR, "build_response should reject NULL response struct");
+}
+
+Test(http, should_reject_build_response_with_oversized_body) {
+  http_response_t response = {0};
+  size_t oversized_length = HTTP_MAX_BODY_SIZE + 1;
+  char *oversized_body = malloc(oversized_length + 1);
+  memset(oversized_body, 'A', oversized_length);
+  oversized_body[oversized_length] = '\0';
+
+  parse_result_e result = build_response(PARSE_OK, oversized_body, &response);
+
+  cr_assert_eq(result, PARSE_BODY_TOO_LARGE, "build_response should reject oversized body");
+
+  cr_assert_null(response.body, "Response body should remain NULL after failed build");
+  cr_assert_eq(response.body_length, 0, "Body length should remain 0 after failed build");
+
+  free(oversized_body);
+  free_http_response(&response);
+}
+
+Test(http, should_build_response_with_mixed_parse_results_and_body_content) {
+  http_response_t response1 = {0};
+  http_response_t response2 = {0};
+  http_response_t response3 = {0};
+
+  const char *success_body = "Success message";
+  const char *error_body = "Error occurred";
+  const char *warning_body = "Warning: something happened";
+
+  parse_result_e result1 = build_response(PARSE_OK, success_body, &response1);
+  parse_result_e result2 = build_response(PARSE_INVALID_METHOD, error_body, &response2);
+  parse_result_e result3 = build_response(PARSE_CONTENT_LENGTH_INVALID, warning_body, &response3);
+
+  cr_assert_eq(result1, PARSE_OK, "First build_response should succeed");
+  cr_assert_eq(result2, PARSE_OK, "Second build_response should succeed");
+  cr_assert_eq(result3, PARSE_OK, "Third build_response should succeed");
+
+  cr_assert_eq(response1.status_code, 200, "First response should have status 200");
+  cr_assert_eq(response2.status_code, 405, "Second response should have status 405");
+  cr_assert_eq(response3.status_code, 400, "Third response should have status 400");
+
+  cr_assert_str_eq(response1.body, success_body, "First response body should match");
+  cr_assert_str_eq(response2.body, error_body, "Second response body should match");
+  cr_assert_str_eq(response3.body, warning_body, "Third response body should match");
+
+  free_http_response(&response1);
+  free_http_response(&response2);
+  free_http_response(&response3);
+}
+
+Test(http, should_build_response_with_all_standard_headers_correctly_formatted) {
+  http_response_t response = {0};
+  const char *body_content = "Response with all headers";
+
+  parse_result_e result = build_response(PARSE_OK, body_content, &response);
+
+  cr_assert_eq(result, PARSE_OK, "build_response should succeed");
+  cr_assert_eq(response.headers_count, 3, "Should have exactly 3 standard headers");
+
+  cr_assert_str_eq(response.headers[0].key, "Connection", "First header key should be Connection");
+  cr_assert_str_eq(response.headers[0].value, "close", "Connection value should be close");
+  cr_assert(strlen(response.headers[0].key) < HTTP_HEADER_KEY_LEN, "Connection key should fit in buffer");
+  cr_assert(strlen(response.headers[0].value) < HTTP_HEADER_VALUE_LEN, "Connection value should fit in buffer");
+
+  cr_assert_str_eq(response.headers[1].key, "Content-Length", "Second header key should be Content-Length");
+  cr_assert_str_eq(response.headers[1].value, "25", "Content-Length should match body length");
+  cr_assert(strlen(response.headers[1].key) < HTTP_HEADER_KEY_LEN, "Content-Length key should fit in buffer");
+  cr_assert(strlen(response.headers[1].value) < HTTP_HEADER_VALUE_LEN, "Content-Length value should fit in buffer");
+
+  cr_assert_str_eq(response.headers[2].key, "Content-Type", "Third header key should be Content-Type");
+  cr_assert_str_eq(response.headers[2].value, "text/plain", "Content-Type should be text/plain");
+  cr_assert(strlen(response.headers[2].key) < HTTP_HEADER_KEY_LEN, "Content-Type key should fit in buffer");
+  cr_assert(strlen(response.headers[2].value) < HTTP_HEADER_VALUE_LEN, "Content-Type value should fit in buffer");
+
+  free_http_response(&response);
 }
 
