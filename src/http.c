@@ -420,6 +420,55 @@ parse_result_e build_response(parse_result_e result, const char *body, http_resp
   return PARSE_OK;
 }
 
+char *response_to_string(const http_response_t *response) {
+  if (!response) {
+    return NULL;
+  }
+
+  size_t buffer_size = HTTP_RESPONSE_BUFFER_SIZE;
+  char *buffer = malloc(buffer_size);
+  if (!buffer) {
+    return NULL;
+  }
+
+  int len =
+      snprintf(buffer, buffer_size, "%s %d %s\r\n", response->protocol, response->status_code, response->reason_phrase);
+
+  if (len < 0 || (size_t)len >= buffer_size) {
+    free(buffer);
+    return NULL;
+  }
+
+  for (size_t i = 0; i < response->headers_count; i++) {
+    int header_len =
+        snprintf(buffer + len, buffer_size - len, "%s: %s\r\n", response->headers[i].key, response->headers[i].value);
+    if (header_len < 0 || len + header_len >= (int)buffer_size) {
+      free(buffer);
+      return NULL;
+    }
+    len += header_len;
+  }
+
+  int crlf_len = snprintf(buffer + len, buffer_size - len, "\r\n");
+  if (crlf_len < 0 || len + crlf_len >= (int)buffer_size) {
+    free(buffer);
+    return NULL;
+  }
+  len += crlf_len;
+
+  if (response->body && response->body_length > 0) {
+    if (len + (int)response->body_length >= (int)buffer_size) {
+      free(buffer);
+      return NULL;
+    }
+    memcpy(buffer + len, response->body, response->body_length);
+    len += response->body_length;
+  }
+
+  buffer[len] = '\0';
+  return buffer;
+}
+
 void free_http_request(http_request_t *request) {
   free_http_headers(request);
   free_http_body(request);

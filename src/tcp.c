@@ -114,20 +114,40 @@ void handle_client_data(connection_manager *manager, int index) {
 
   http_request_t request = {0};
   parse_result_e result = parse_http_request(client->buffer, &request);
-  if (result != PARSE_OK) {
-    fprintf(stderr, "Request parsing failed: %d\n", result);
-    remove_client(manager, index);
-    return;
-  }
 
   debug_log("New request: %s %s %s\n", request.method, request.path, request.protocol);
 
-  if (send(client->fd, client->buffer, client->buffer_len, 0) == -1) {
-    perror("Send failed");
+  http_response_t response = {0};
+  // TODO reponse_body to be defined
+  const char *response_body = "";
+  parse_result_e build_result = build_response(result, response_body, &response);
+
+  // TODO 500
+  if (build_result != PARSE_OK) {
+    fprintf(stderr, "Response building failed: %d\n", build_result);
+    free_http_request(&request);
     remove_client(manager, index);
     return;
   }
 
+  char *response_string = response_to_string(&response);
+  // TODO 500
+  if (!response_string) {
+    fprintf(stderr, "Response string conversion failed\n");
+    free_http_request(&request);
+    free_http_response(&response);
+    remove_client(manager, index);
+    return;
+  }
+
+  if (send(client->fd, response_string, strlen(response_string), 0) == -1) {
+    perror("Send failed");
+  }
+  // TODO 500
+
+  free(response_string);
+  free_http_request(&request);
+  free_http_response(&response);
   remove_client(manager, index);
 }
 

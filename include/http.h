@@ -14,6 +14,7 @@
 #define HTTP_MAX_HEADERS_SIZE 8192
 #define HTTP_MAX_BODY_SIZE 1048576
 #define HTTP_RESPONSE_REASON_LEN 64
+#define HTTP_RESPONSE_BUFFER_SIZE (HTTP_MAX_HEADERS_SIZE + HTTP_MAX_BODY_SIZE + 1024)
 
 typedef enum {
   PARSE_OK = 0,
@@ -78,6 +79,7 @@ void build_status_line(parse_result_e result, http_response_t *response);
 void build_response_headers(http_response_t *response);
 parse_result_e set_response_body(http_response_t *response, const char *body);
 parse_result_e build_response(parse_result_e result, const char *body, http_response_t *response);
+char *response_to_string(const http_response_t *response);
 extern const status_code_pair_t status_codes[];
 void free_http_headers(http_request_t *request);
 void free_http_body(http_request_t *request);
