@@ -1,8 +1,8 @@
 #include "tcp.h"
 #include "debug.h"
-#include "http_types.h"
 #include "http_request.h"
 #include "http_response.h"
+#include "http_types.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -11,7 +11,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
 
 void handle_client_data(connection_manager *manager, int index) {
   client_connection *client = &manager->clients[index];
@@ -65,13 +64,6 @@ void handle_client_data(connection_manager *manager, int index) {
   remove_client(manager, index);
 }
 
-void handle_new_connection(connection_manager *manager, int server_fd) {
-  int client_fd = accept_client(server_fd);
-  if (client_fd != -1) {
-    add_client(manager, client_fd);
-  }
-}
-
 void run_server(tcp_server *server) {
   connection_manager *manager = malloc(sizeof(connection_manager));
   if (manager == NULL) {
@@ -94,7 +86,10 @@ void run_server(tcp_server *server) {
     }
 
     if (manager->poll_fds[0].revents & POLLIN) {
-      handle_new_connection(manager, server->socket_fd);
+      int client_fd = accept_client(server->socket_fd);
+      if (client_fd != -1) {
+        add_client(manager, client_fd);
+      }
     }
 
     for (int i = manager->poll_count - 1; i >= 1; i--) {
