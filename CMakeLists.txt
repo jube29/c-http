@@ -6,7 +6,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(chttp 
     src/main.c
     src/tcp.c
-    src/http.c
+    src/http_request.c
+    src/http_response.c
 )
 
 target_include_directories(chttp PRIVATE include)
@@ -14,7 +15,8 @@ target_include_directories(chttp PRIVATE include)
 add_executable(test_runner
     test/test_http.c
     src/tcp.c
-    src/http.c
+    src/http_request.c
+    src/http_response.c
 )
 
 target_include_directories(test_runner PRIVATE include /usr/include/criterion)
