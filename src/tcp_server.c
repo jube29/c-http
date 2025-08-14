@@ -38,3 +38,14 @@ server_status_e bind_tcp_port(tcp_server *server) {
   debug_log("Server bound and listening on localhost\n");
   return SERVER_OK;
 }
+
+int accept_client(int server_fd) {
+  struct sockaddr_in client_address = {0};
+  socklen_t client_len = sizeof(client_address);
+  int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
+  if (client_fd < 0) {
+    perror("Accept failed");
+    return -1;
+  }
+  return client_fd;
+}

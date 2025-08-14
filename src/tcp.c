@@ -12,16 +12,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-int accept_client(int server_fd) {
-  struct sockaddr_in client_address = {0};
-  socklen_t client_len = sizeof(client_address);
-  int client_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
-  if (client_fd < 0) {
-    perror("Accept failed");
-    return -1;
-  }
-  return client_fd;
-}
 
 void handle_client_data(connection_manager *manager, int index) {
   client_connection *client = &manager->clients[index];
