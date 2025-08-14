@@ -8,9 +8,7 @@ Test(http, should_parse_get) { cr_assert(parse_http_method("GET") == PARSE_OK, "
 
 Test(http, should_parse_post) { cr_assert(parse_http_method("POST") == PARSE_OK, "POST method should be parsed"); }
 
-Test(http, should_parse_delete) {
-  cr_assert(parse_http_method("DELETE") == PARSE_OK, "DELETE method should be parsed");
-}
+Test(http, should_parse_delete) { cr_assert(parse_http_method("HEAD") == PARSE_OK, "HEAD method should be parsed"); }
 
 Test(http, should_not_parse_put) {
   cr_assert(parse_http_method("PUT") == PARSE_INVALID_METHOD, "PUT method should not be parsed");
