@@ -4,16 +4,10 @@
 #include <netinet/in.h>
 #include <poll.h>
 #include <sys/socket.h>
+#include "tcp_server.h"
 
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1500000
-
-typedef enum { SERVER_OK = 0, SERVER_SOCKET_ERROR, SERVER_BIND_ERROR, SERVER_LISTEN_ERROR } server_status_e;
-
-typedef struct {
-  int socket_fd;
-  struct sockaddr_in address;
-} tcp_server;
 
 typedef struct {
   int fd;
@@ -28,7 +22,6 @@ typedef struct {
   int poll_count;
 } connection_manager;
 
-server_status_e bind_tcp_port(tcp_server *server);
 int accept_client(int server_fd);
 void init_connection_manager(connection_manager *manager);
 void add_client(connection_manager *manager, int client_fd);
