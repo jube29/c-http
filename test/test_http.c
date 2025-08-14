@@ -1,4 +1,6 @@
-#include "../include/http.h"
+#include "../include/http_types.h"
+#include "../include/http_request.h"
+#include "../include/http_response.h"
 #include <criterion/internal/test.h>
 #include <stdio.h>
 #include <stdlib.h>
