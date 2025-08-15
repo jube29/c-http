@@ -1,8 +1,10 @@
 #include "tcp_connection.h"
 #include "debug.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 void init_connection_manager(connection_manager *manager) {
@@ -50,3 +52,22 @@ void remove_client(connection_manager *manager, int index) {
   manager->poll_count--;
   debug_log("Client disconnected. Total clients: %d\n", manager->client_count);
 }
+
+ssize_t recv_client_data(connection_manager *manager, int index) {
+  if (index < 0 || index >= manager->client_count)
+    return -1;
+
+  client_connection *client = &manager->clients[index];
+  ssize_t bytes_read = recv(client->fd, client->buffer + client->buffer_len, BUFFER_SIZE - client->buffer_len, 0);
+
+  if (bytes_read <= 0) {
+    if (bytes_read == 0 || (bytes_read == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
+      remove_client(manager, index);
+    }
+    return bytes_read;
+  }
+
+  client->buffer_len += bytes_read;
+  return bytes_read;
+}
+

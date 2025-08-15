@@ -5,7 +5,6 @@
 #include "http_types.h"
 
 #include <arpa/inet.h>
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,17 +12,13 @@
 #include <unistd.h>
 
 void handle_client_data(connection_manager *manager, int index) {
-  client_connection *client = &manager->clients[index];
-  ssize_t bytes_read = recv(client->fd, client->buffer + client->buffer_len, BUFFER_SIZE - client->buffer_len, 0);
+  ssize_t bytes_read = recv_client_data(manager, index);
 
   if (bytes_read <= 0) {
-    if (bytes_read == 0 || (bytes_read == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
-      remove_client(manager, index);
-    }
     return;
   }
 
-  client->buffer_len += bytes_read;
+  client_connection *client = &manager->clients[index];
 
   http_request_t request = {0};
   parse_result_e result = parse_http_request(client->buffer, &request);

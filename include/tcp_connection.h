@@ -3,6 +3,7 @@
 
 #include <poll.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1500000
@@ -23,5 +24,6 @@ typedef struct {
 void init_connection_manager(connection_manager *manager);
 void add_client(connection_manager *manager, int client_fd);
 void remove_client(connection_manager *manager, int index);
+ssize_t recv_client_data(connection_manager *manager, int index);
 
 #endif
