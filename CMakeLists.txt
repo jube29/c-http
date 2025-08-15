@@ -8,6 +8,7 @@ add_executable(chttp
     src/tcp.c
     src/tcp_server.c
     src/tcp_connection.c
+    src/http_handler.c
     src/http_request.c
     src/http_response.c
 )
@@ -19,6 +20,7 @@ add_executable(test_runner
     src/tcp.c
     src/tcp_server.c
     src/tcp_connection.c
+    src/http_handler.c
     src/http_request.c
     src/http_response.c
 )
