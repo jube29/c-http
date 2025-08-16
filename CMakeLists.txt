@@ -6,8 +6,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(chttp 
     src/main.c
     src/tcp.c
-    src/tcp_server.c
-    src/tcp_connection.c
+    src/server.c
+    src/connection.c
     src/http_handler.c
     src/http_request.c
     src/http_response.c
@@ -18,8 +18,8 @@ target_include_directories(chttp PRIVATE include)
 add_executable(test_runner
     test/test_http.c
     src/tcp.c
-    src/tcp_server.c
-    src/tcp_connection.c
+    src/server.c
+    src/connection.c
     src/http_handler.c
     src/http_request.c
     src/http_response.c

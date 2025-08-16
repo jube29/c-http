@@ -1,4 +1,4 @@
-#include "tcp_connection.h"
+#include "connection.h"
 #include "debug.h"
 
 #include <errno.h>
