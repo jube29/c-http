@@ -7,7 +7,7 @@
 #include "connection.h"
 
 void handle_client_data(connection_manager *manager, int index);
-void run_server(tcp_server *server);
+void run_server(tcp_server *server, connection_manager *manager);
 
 #endif
 

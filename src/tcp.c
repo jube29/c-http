@@ -3,7 +3,6 @@
 #include "http_handler.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 void handle_client_data(connection_manager *manager, int index) {
@@ -24,14 +23,7 @@ void handle_client_data(connection_manager *manager, int index) {
   remove_client(manager, index);
 }
 
-void run_server(tcp_server *server) {
-  connection_manager *manager = malloc(sizeof(connection_manager));
-  if (manager == NULL) {
-    perror("Failed to allocate connection manager");
-    return;
-  }
-  init_connection_manager(manager);
-
+void run_server(tcp_server *server, connection_manager *manager) {
   manager->poll_fds[0].fd = server->socket_fd;
   manager->poll_fds[0].events = POLLIN;
   manager->poll_count = 1;
@@ -62,7 +54,6 @@ void run_server(tcp_server *server) {
   for (int i = 0; i < manager->client_count; i++) {
     close(manager->clients[i].fd);
   }
-  free(manager);
   close(server->socket_fd);
 }
 
